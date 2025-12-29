@@ -9,6 +9,7 @@
     "web": "expo start --web"
   },
   "dependencies": {
+    "@react-native-picker/picker": "^2.11.4",
     "@shopify/react-native-skia": "^2.4.14",
     "expo": "~54.0.30",
     "expo-background-fetch": "^14.0.9",

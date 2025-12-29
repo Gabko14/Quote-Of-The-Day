@@ -1,16 +1,83 @@
-import { View, Text, StyleSheet, Pressable, TextInput, FlatList } from 'react-native';
+import { View, Text, StyleSheet, Pressable, TextInput, FlatList, Alert, ActivityIndicator } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
-import { useState } from 'react';
+import { useState, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { Category, getAllCategories, createCategory, deleteCategory, categoryExists } from '../src/db';
 
 export default function CategoriesScreen() {
+  const [categories, setCategories] = useState<Category[]>([]);
   const [newCategory, setNewCategory] = useState('');
+  const [loading, setLoading] = useState(true);
 
-  const handleAdd = () => {
-    if (newCategory.trim()) {
-      // TODO: Save to database
-      setNewCategory('');
+  const loadCategories = useCallback(async () => {
+    setLoading(true);
+    try {
+      const data = await getAllCategories();
+      setCategories(data);
+    } finally {
+      setLoading(false);
     }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadCategories();
+    }, [loadCategories])
+  );
+
+  const handleAdd = async () => {
+    const name = newCategory.trim();
+    if (!name) return;
+
+    const exists = await categoryExists(name);
+    if (exists) {
+      Alert.alert('Error', 'A category with this name already exists');
+      return;
+    }
+
+    await createCategory(name);
+    setNewCategory('');
+    loadCategories();
   };
+
+  const handleDelete = (category: Category) => {
+    Alert.alert(
+      'Delete Category',
+      `Delete "${category.name}"? Quotes in this category will be uncategorized.`,
+      [
+        { text: 'Cancel', style: 'cancel' },
+        {
+          text: 'Delete',
+          style: 'destructive',
+          onPress: async () => {
+            await deleteCategory(category.id);
+            loadCategories();
+          },
+        },
+      ]
+    );
+  };
+
+  const renderCategory = ({ item }: { item: Category }) => (
+    <View style={styles.categoryItem}>
+      <Text style={styles.categoryName}>{item.name}</Text>
+      <Pressable
+        style={styles.deleteButton}
+        onPress={() => handleDelete(item)}
+        hitSlop={10}
+      >
+        <Ionicons name="trash-outline" size={20} color="#ff3b30" />
+      </Pressable>
+    </View>
+  );
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -21,17 +88,27 @@ export default function CategoriesScreen() {
           value={newCategory}
           onChangeText={setNewCategory}
           onSubmitEditing={handleAdd}
+          returnKeyType="done"
         />
         <Pressable style={styles.addButton} onPress={handleAdd}>
           <Ionicons name="add" size={24} color="#fff" />
         </Pressable>
       </View>
 
-      <View style={styles.emptyState}>
-        <Ionicons name="folder-open-outline" size={64} color="#ccc" />
-        <Text style={styles.emptyText}>No categories yet</Text>
-        <Text style={styles.emptySubtext}>Categories help organize your quotes</Text>
-      </View>
+      {categories.length === 0 ? (
+        <View style={styles.emptyState}>
+          <Ionicons name="folder-open-outline" size={64} color="#ccc" />
+          <Text style={styles.emptyText}>No categories yet</Text>
+          <Text style={styles.emptySubtext}>Categories help organize your quotes</Text>
+        </View>
+      ) : (
+        <FlatList
+          data={categories}
+          renderItem={renderCategory}
+          keyExtractor={(item) => item.id.toString()}
+          contentContainerStyle={styles.list}
+        />
+      )}
     </View>
   );
 }
@@ -40,6 +117,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   inputRow: {
     flexDirection: 'row',
@@ -62,6 +144,30 @@ const styles = StyleSheet.create({
     backgroundColor: '#007AFF',
     justifyContent: 'center',
     alignItems: 'center',
+  },
+  list: {
+    paddingHorizontal: 15,
+  },
+  categoryItem: {
+    backgroundColor: '#fff',
+    borderRadius: 12,
+    padding: 15,
+    marginBottom: 10,
+    flexDirection: 'row',
+    alignItems: 'center',
+    justifyContent: 'space-between',
+    shadowColor: '#000',
+    shadowOffset: { width: 0, height: 1 },
+    shadowOpacity: 0.1,
+    shadowRadius: 2,
+    elevation: 2,
+  },
+  categoryName: {
+    fontSize: 16,
+    color: '#333',
+  },
+  deleteButton: {
+    padding: 8,
   },
   emptyState: {
     flex: 1,

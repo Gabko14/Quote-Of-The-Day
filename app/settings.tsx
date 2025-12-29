@@ -1,8 +1,40 @@
-import { View, Text, StyleSheet, Switch, Pressable } from 'react-native';
-import { useState } from 'react';
+import { View, Text, StyleSheet, Switch, ActivityIndicator } from 'react-native';
+import { useState, useEffect, useCallback } from 'react';
+import { useFocusEffect } from 'expo-router';
+import { getDarkBackground, setDarkBackground as saveDarkBackground } from '../src/db';
 
 export default function SettingsScreen() {
   const [darkBackground, setDarkBackground] = useState(true);
+  const [loading, setLoading] = useState(true);
+
+  const loadSettings = useCallback(async () => {
+    setLoading(true);
+    try {
+      const dark = await getDarkBackground();
+      setDarkBackground(dark);
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useFocusEffect(
+    useCallback(() => {
+      loadSettings();
+    }, [loadSettings])
+  );
+
+  const handleToggle = async (value: boolean) => {
+    setDarkBackground(value);
+    await saveDarkBackground(value);
+  };
+
+  if (loading) {
+    return (
+      <View style={styles.loadingContainer}>
+        <ActivityIndicator size="large" color="#007AFF" />
+      </View>
+    );
+  }
 
   return (
     <View style={styles.container}>
@@ -18,7 +50,7 @@ export default function SettingsScreen() {
           </View>
           <Switch
             value={darkBackground}
-            onValueChange={setDarkBackground}
+            onValueChange={handleToggle}
             trackColor={{ false: '#ddd', true: '#007AFF' }}
           />
         </View>
@@ -39,6 +71,11 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f5f5f5',
+  },
+  loadingContainer: {
+    flex: 1,
+    justifyContent: 'center',
+    alignItems: 'center',
   },
   section: {
     backgroundColor: '#fff',

@@ -1,7 +1,14 @@
+import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import { registerBackgroundTask } from '../src/services/backgroundTask';
 
 export default function RootLayout() {
+  useEffect(() => {
+    // Register background task for daily quote updates
+    registerBackgroundTask().catch(console.error);
+  }, []);
+
   return (
     <Tabs
       screenOptions={{

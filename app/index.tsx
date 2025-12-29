@@ -2,18 +2,11 @@ import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Dimensions
 import { StatusBar } from 'expo-status-bar';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import {
-  Quote,
-  getRandomQuote,
-  getCurrentQuoteId,
-  setCurrentQuoteId,
-  getQuoteById,
-  getDarkBackground,
-  getQuoteCount,
-} from '../src/db';
+import { Quote, getDarkBackground, getQuoteCount } from '../src/db';
 import { WallpaperPreview } from '../src/components/WallpaperPreview';
 import { generateAndSaveWallpaper, cleanOldWallpapers } from '../src/services/wallpaperGenerator';
 import { setBothWallpapers } from '../src/services/wallpaperService';
+import { getDailyQuote } from '../src/services/dailyQuote';
 
 export default function HomeScreen() {
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -30,30 +23,15 @@ export default function HomeScreen() {
 
       if (count === 0) {
         setQuote(null);
-        setLoading(false);
         return;
       }
 
       const dark = await getDarkBackground();
       setDarkBg(dark);
 
-      // Try to get current quote
-      const currentId = await getCurrentQuoteId();
-      if (currentId) {
-        const current = await getQuoteById(currentId);
-        if (current) {
-          setQuote(current);
-          setLoading(false);
-          return;
-        }
-      }
-
-      // No current quote, pick a random one
-      const random = await getRandomQuote();
-      if (random) {
-        await setCurrentQuoteId(random.id);
-        setQuote(random);
-      }
+      // Get daily quote (handles rotation automatically)
+      const dailyQuote = await getDailyQuote();
+      setQuote(dailyQuote);
     } finally {
       setLoading(false);
     }

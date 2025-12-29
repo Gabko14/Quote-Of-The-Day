@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useEffect, useState, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import {
   Quote,
@@ -11,6 +11,7 @@ import {
   getDarkBackground,
   getQuoteCount,
 } from '../src/db';
+import { WallpaperPreview } from '../src/components/WallpaperPreview';
 
 export default function HomeScreen() {
   const [quote, setQuote] = useState<Quote | null>(null);
@@ -26,6 +27,7 @@ export default function HomeScreen() {
 
       if (count === 0) {
         setQuote(null);
+        setLoading(false);
         return;
       }
 
@@ -38,6 +40,7 @@ export default function HomeScreen() {
         const current = await getQuoteById(currentId);
         if (current) {
           setQuote(current);
+          setLoading(false);
           return;
         }
       }
@@ -60,7 +63,7 @@ export default function HomeScreen() {
   );
 
   const handleSetWallpaper = () => {
-    // TODO: Implement wallpaper setting
+    // TODO: Implement wallpaper setting in Phase 5
     alert('Wallpaper functionality coming soon!');
   };
 
@@ -76,24 +79,14 @@ export default function HomeScreen() {
     <View style={styles.container}>
       <StatusBar style="auto" />
       <Text style={styles.label}>Quote of the Day</Text>
-      <View style={[styles.previewContainer, !darkBg && styles.lightPreview]}>
-        {quote ? (
-          <>
-            <Text style={[styles.quoteText, !darkBg && styles.darkText]}>
-              "{quote.text}"
-            </Text>
-            {quote.author && (
-              <Text style={[styles.authorText, !darkBg && styles.darkText]}>
-                — {quote.author}
-              </Text>
-            )}
-          </>
-        ) : (
-          <Text style={[styles.quoteText, !darkBg && styles.darkText]}>
-            Add your first quote to get started
-          </Text>
-        )}
-      </View>
+
+      <WallpaperPreview
+        text={quote?.text ?? 'Add your first quote to get started'}
+        author={quote?.author}
+        darkBackground={darkBg}
+        style={styles.preview}
+      />
+
       <Pressable
         style={[styles.button, !hasQuotes && styles.buttonDisabled]}
         onPress={handleSetWallpaper}
@@ -116,37 +109,10 @@ const styles = StyleSheet.create({
   label: {
     fontSize: 16,
     color: '#666',
-    marginBottom: 10,
+    marginBottom: 20,
   },
-  previewContainer: {
-    width: '80%',
-    aspectRatio: 9 / 16,
-    backgroundColor: '#000',
-    borderRadius: 20,
-    justifyContent: 'center',
-    alignItems: 'center',
-    padding: 30,
+  preview: {
     marginBottom: 30,
-  },
-  lightPreview: {
-    backgroundColor: '#fff',
-    borderWidth: 1,
-    borderColor: '#ddd',
-  },
-  quoteText: {
-    color: '#fff',
-    fontSize: 18,
-    textAlign: 'center',
-    fontStyle: 'italic',
-  },
-  darkText: {
-    color: '#000',
-  },
-  authorText: {
-    color: '#ccc',
-    fontSize: 14,
-    textAlign: 'center',
-    marginTop: 16,
   },
   button: {
     backgroundColor: '#007AFF',

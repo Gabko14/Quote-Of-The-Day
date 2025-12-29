@@ -1,5 +1,5 @@
 import { Skia, FontStyle, SkImage } from '@shopify/react-native-skia';
-import * as FileSystem from 'expo-file-system';
+import { File, Directory, Paths } from 'expo-file-system';
 import { Dimensions } from 'react-native';
 
 interface WallpaperOptions {
@@ -10,13 +10,16 @@ interface WallpaperOptions {
   height?: number;
 }
 
-const WALLPAPER_DIR = `${FileSystem.documentDirectory}wallpapers/`;
+function getWallpaperDir(): Directory {
+  return new Directory(Paths.document, 'wallpapers');
+}
 
-async function ensureWallpaperDir() {
-  const dirInfo = await FileSystem.getInfoAsync(WALLPAPER_DIR);
-  if (!dirInfo.exists) {
-    await FileSystem.makeDirectoryAsync(WALLPAPER_DIR, { intermediates: true });
+async function ensureWallpaperDir(): Promise<Directory> {
+  const dir = getWallpaperDir();
+  if (!dir.exists) {
+    dir.create();
   }
+  return dir;
 }
 
 export function generateWallpaperImage(options: WallpaperOptions): SkImage | null {
@@ -118,16 +121,20 @@ export async function saveWallpaperToFile(
   image: SkImage,
   filename: string = 'wallpaper.png'
 ): Promise<string> {
-  await ensureWallpaperDir();
+  const dir = await ensureWallpaperDir();
+  const file = new File(dir, filename);
 
-  const data = image.encodeToBase64();
-  const filePath = `${WALLPAPER_DIR}${filename}`;
+  const base64Data = image.encodeToBase64();
+  // Convert base64 to Uint8Array
+  const binaryString = atob(base64Data);
+  const bytes = new Uint8Array(binaryString.length);
+  for (let i = 0; i < binaryString.length; i++) {
+    bytes[i] = binaryString.charCodeAt(i);
+  }
 
-  await FileSystem.writeAsStringAsync(filePath, data, {
-    encoding: FileSystem.EncodingType.Base64,
-  });
+  file.write(bytes);
 
-  return filePath;
+  return file.uri;
 }
 
 export async function generateAndSaveWallpaper(options: WallpaperOptions): Promise<string | null> {
@@ -139,30 +146,37 @@ export async function generateAndSaveWallpaper(options: WallpaperOptions): Promi
 }
 
 export async function getWallpaperPath(): Promise<string | null> {
-  await ensureWallpaperDir();
+  const dir = getWallpaperDir();
+  if (!dir.exists) return null;
 
-  const files = await FileSystem.readDirectoryAsync(WALLPAPER_DIR);
-  const wallpapers = files.filter((f) => f.startsWith('wallpaper_') && f.endsWith('.png'));
+  const contents = dir.list();
+  const wallpapers = contents
+    .filter((item): item is File => item instanceof File)
+    .filter((f) => f.name.startsWith('wallpaper_') && f.name.endsWith('.png'));
 
   if (wallpapers.length === 0) return null;
 
-  // Return most recent
-  wallpapers.sort().reverse();
-  return `${WALLPAPER_DIR}${wallpapers[0]}`;
+  // Return most recent (sort by name which includes timestamp)
+  wallpapers.sort((a, b) => b.name.localeCompare(a.name));
+  return wallpapers[0].uri;
 }
 
 export async function cleanOldWallpapers(keepCount: number = 1): Promise<void> {
-  await ensureWallpaperDir();
+  const dir = getWallpaperDir();
+  if (!dir.exists) return;
 
-  const files = await FileSystem.readDirectoryAsync(WALLPAPER_DIR);
-  const wallpapers = files.filter((f) => f.startsWith('wallpaper_') && f.endsWith('.png'));
+  const contents = dir.list();
+  const wallpapers = contents
+    .filter((item): item is File => item instanceof File)
+    .filter((f) => f.name.startsWith('wallpaper_') && f.name.endsWith('.png'));
 
   if (wallpapers.length <= keepCount) return;
 
-  wallpapers.sort().reverse();
+  // Sort by name (timestamp) descending
+  wallpapers.sort((a, b) => b.name.localeCompare(a.name));
   const toDelete = wallpapers.slice(keepCount);
 
   for (const file of toDelete) {
-    await FileSystem.deleteAsync(`${WALLPAPER_DIR}${file}`, { idempotent: true });
+    file.delete();
   }
 }

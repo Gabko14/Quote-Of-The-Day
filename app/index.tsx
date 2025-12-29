@@ -1,4 +1,4 @@
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
@@ -12,12 +12,15 @@ import {
   getQuoteCount,
 } from '../src/db';
 import { WallpaperPreview } from '../src/components/WallpaperPreview';
+import { generateAndSaveWallpaper, cleanOldWallpapers } from '../src/services/wallpaperGenerator';
+import { setBothWallpapers } from '../src/services/wallpaperService';
 
 export default function HomeScreen() {
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [darkBg, setDarkBg] = useState(true);
   const [hasQuotes, setHasQuotes] = useState(false);
+  const [settingWallpaper, setSettingWallpaper] = useState(false);
 
   const loadQuote = useCallback(async () => {
     setLoading(true);
@@ -62,9 +65,39 @@ export default function HomeScreen() {
     }, [loadQuote])
   );
 
-  const handleSetWallpaper = () => {
-    // TODO: Implement wallpaper setting in Phase 5
-    alert('Wallpaper functionality coming soon!');
+  const handleSetWallpaper = async () => {
+    if (!quote) return;
+
+    setSettingWallpaper(true);
+    try {
+      // Get device screen dimensions for proper wallpaper size
+      const { width, height } = Dimensions.get('screen');
+
+      // Generate wallpaper at device resolution
+      const wallpaperPath = await generateAndSaveWallpaper({
+        text: quote.text,
+        author: quote.author,
+        darkBackground: darkBg,
+        width: Math.round(width * 2), // 2x for higher DPI
+        height: Math.round(height * 2),
+      });
+
+      if (!wallpaperPath) {
+        Alert.alert('Error', 'Failed to generate wallpaper image');
+        return;
+      }
+
+      // Set as wallpaper
+      await setBothWallpapers(wallpaperPath);
+
+      // Clean up old wallpapers, keep only the latest
+      await cleanOldWallpapers(1);
+    } catch (error) {
+      console.error('Error setting wallpaper:', error);
+      Alert.alert('Error', 'Failed to set wallpaper');
+    } finally {
+      setSettingWallpaper(false);
+    }
   };
 
   if (loading) {
@@ -88,11 +121,15 @@ export default function HomeScreen() {
       />
 
       <Pressable
-        style={[styles.button, !hasQuotes && styles.buttonDisabled]}
+        style={[styles.button, (!hasQuotes || settingWallpaper) && styles.buttonDisabled]}
         onPress={handleSetWallpaper}
-        disabled={!hasQuotes}
+        disabled={!hasQuotes || settingWallpaper}
       >
-        <Text style={styles.buttonText}>Set as Wallpaper</Text>
+        {settingWallpaper ? (
+          <ActivityIndicator size="small" color="#fff" />
+        ) : (
+          <Text style={styles.buttonText}>Set as Wallpaper</Text>
+        )}
       </Pressable>
     </View>
   );
@@ -119,6 +156,8 @@ const styles = StyleSheet.create({
     paddingHorizontal: 30,
     paddingVertical: 15,
     borderRadius: 10,
+    minWidth: 180,
+    alignItems: 'center',
   },
   buttonDisabled: {
     backgroundColor: '#ccc',

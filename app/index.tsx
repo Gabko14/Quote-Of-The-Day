@@ -7,8 +7,10 @@ import { WallpaperPreview } from '../src/components/WallpaperPreview';
 import { generateAndSaveWallpaper, cleanOldWallpapers } from '../src/services/wallpaperGenerator';
 import { setBothWallpapers } from '../src/services/wallpaperService';
 import { getDailyQuote } from '../src/services/dailyQuote';
+import { useTheme } from '../src/theme/ThemeContext';
 
 export default function HomeScreen() {
+  const { colors, isDark } = useTheme();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [darkBg, setDarkBg] = useState(true);
@@ -78,17 +80,51 @@ export default function HomeScreen() {
     }
   };
 
+  const styles = StyleSheet.create({
+    container: {
+      flex: 1,
+      backgroundColor: colors.background,
+      alignItems: 'center',
+      justifyContent: 'center',
+      padding: 20,
+    },
+    label: {
+      fontSize: 16,
+      color: colors.textSecondary,
+      marginBottom: 20,
+    },
+    preview: {
+      marginBottom: 30,
+    },
+    button: {
+      backgroundColor: colors.primary,
+      paddingHorizontal: 30,
+      paddingVertical: 15,
+      borderRadius: 10,
+      minWidth: 180,
+      alignItems: 'center',
+    },
+    buttonDisabled: {
+      backgroundColor: colors.textMuted,
+    },
+    buttonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
+  });
+
   if (loading) {
     return (
       <View style={styles.container}>
-        <ActivityIndicator size="large" color="#007AFF" />
+        <ActivityIndicator size="large" color={colors.primary} />
       </View>
     );
   }
 
   return (
     <View style={styles.container}>
-      <StatusBar style="auto" />
+      <StatusBar style={isDark ? 'light' : 'dark'} />
       <Text style={styles.label}>Quote of the Day</Text>
 
       <WallpaperPreview
@@ -112,37 +148,3 @@ export default function HomeScreen() {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: '#f5f5f5',
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: 20,
-  },
-  label: {
-    fontSize: 16,
-    color: '#666',
-    marginBottom: 20,
-  },
-  preview: {
-    marginBottom: 30,
-  },
-  button: {
-    backgroundColor: '#007AFF',
-    paddingHorizontal: 30,
-    paddingVertical: 15,
-    borderRadius: 10,
-    minWidth: 180,
-    alignItems: 'center',
-  },
-  buttonDisabled: {
-    backgroundColor: '#ccc',
-  },
-  buttonText: {
-    color: '#fff',
-    fontSize: 16,
-    fontWeight: '600',
-  },
-});

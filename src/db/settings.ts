@@ -2,6 +2,7 @@ import { getDatabase } from './database';
 
 export type SettingKey =
   | 'darkBackground'
+  | 'darkMode'
   | 'lastQuoteDate'
   | 'currentQuoteId';
 

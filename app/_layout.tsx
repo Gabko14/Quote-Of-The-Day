@@ -2,8 +2,11 @@ import { useEffect } from 'react';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
+import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 
-export default function RootLayout() {
+function TabsLayout() {
+  const { colors, isDark } = useTheme();
+
   useEffect(() => {
     // Register background task for daily quote updates
     registerBackgroundTask().catch(console.error);
@@ -12,7 +15,16 @@ export default function RootLayout() {
   return (
     <Tabs
       screenOptions={{
-        tabBarActiveTintColor: '#007AFF',
+        tabBarActiveTintColor: colors.primary,
+        tabBarInactiveTintColor: colors.textMuted,
+        tabBarStyle: {
+          backgroundColor: colors.surface,
+          borderTopColor: colors.border,
+        },
+        headerStyle: {
+          backgroundColor: colors.surface,
+        },
+        headerTintColor: colors.text,
         headerShown: true,
       }}
     >
@@ -59,5 +71,13 @@ export default function RootLayout() {
         }}
       />
     </Tabs>
+  );
+}
+
+export default function RootLayout() {
+  return (
+    <ThemeProvider>
+      <TabsLayout />
+    </ThemeProvider>
   );
 }

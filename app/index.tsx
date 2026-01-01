@@ -66,7 +66,14 @@ export default function HomeScreen() {
       }
 
       // Set as wallpaper
-      await setBothWallpapers(wallpaperPath);
+      const result = await setBothWallpapers(wallpaperPath);
+
+      if (result.success) {
+        Alert.alert('Success', 'Wallpaper has been set!');
+      } else {
+        Alert.alert('Error', result.error || 'Failed to set wallpaper');
+        return;
+      }
 
       // Clean up old wallpapers, keep only the latest
       await cleanOldWallpapers(1);

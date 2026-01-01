@@ -57,8 +57,8 @@ export const WallpaperPreview = forwardRef<WallpaperPreviewHandle, WallpaperPrev
           const filename = `wallpaper_${Date.now()}.png`;
           const destFile = new File(dir, filename);
 
-          // Copy from temp location to our directory
-          const sourceFile = new File(uri.replace('file://', ''));
+          // Move from temp location to our directory
+          const sourceFile = new File(uri);
           if (sourceFile.exists) {
             sourceFile.move(destFile);
           }

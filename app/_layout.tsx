@@ -1,8 +1,14 @@
 import { useEffect } from 'react';
+import { LogBox } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+
+// Ignore the linking warning caused by React 19 StrictMode double-mounting
+// This is a known issue with expo-router and React 19's development mode behavior
+// See: https://github.com/react-navigation/react-navigation/issues/10988
+LogBox.ignoreLogs(['Looks like you have configured linking in multiple places']);
 
 function TabsLayout() {
   const { colors, isDark } = useTheme();

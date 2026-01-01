@@ -9,6 +9,7 @@ export interface WallpaperGeneratorHandle {
   generateAll: (quotes: Quote[], isDark: boolean) => Promise<number>;
 }
 
+// eslint-disable-next-line @typescript-eslint/no-empty-object-type
 export const WallpaperGenerator = forwardRef<WallpaperGeneratorHandle, {}>(
   function WallpaperGenerator(_, ref) {
     const viewRef = useRef<View>(null);

@@ -15,6 +15,7 @@ LogBox.ignoreLogs(['Looks like you have configured linking in multiple places'])
 
 function TabsLayout() {
   const { colors } = useTheme();
+  const generatorRef = useRef<WallpaperGeneratorHandle>(null);
 
   useEffect(() => {
     // Register background task for daily quote updates

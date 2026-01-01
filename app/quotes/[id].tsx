@@ -58,7 +58,7 @@ export default function QuoteFormScreen() {
         });
       }
       router.back();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save quote');
     } finally {
       setSaving(false);

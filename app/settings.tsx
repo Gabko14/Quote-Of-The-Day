@@ -1,5 +1,5 @@
 import { View, Text, StyleSheet, Switch, ActivityIndicator } from 'react-native';
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getDarkBackground, setDarkBackground as saveDarkBackground } from '../src/db';
 import { useTheme } from '../src/theme/ThemeContext';

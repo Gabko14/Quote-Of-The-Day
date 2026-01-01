@@ -11,7 +11,7 @@ import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 LogBox.ignoreLogs(['Looks like you have configured linking in multiple places']);
 
 function TabsLayout() {
-  const { colors, isDark } = useTheme();
+  const { colors } = useTheme();
 
   useEffect(() => {
     // Register background task for daily quote updates

@@ -72,14 +72,12 @@ export async function getDailyQuote(): Promise<Quote | null> {
   return random;
 }
 
-// Background task version - only rotates quote, no wallpaper generation
-// (wallpaper generation requires UI context which isn't available in background)
-export async function rotateDailyQuoteInBackground(): Promise<boolean> {
+// Background task version - rotates and returns the quote
+export async function rotateDailyQuoteInBackground(): Promise<Quote | null> {
   try {
-    const quote = await getDailyQuote();
-    return quote !== null;
+    return await getDailyQuote();
   } catch (error) {
     console.error('Error rotating daily quote:', error);
-    return false;
+    return null;
   }
 }

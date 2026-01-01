@@ -1,9 +1,12 @@
-import { useEffect } from 'react';
+import { useEffect, useRef } from 'react';
 import { LogBox } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+import { WallpaperGenerator, WallpaperGeneratorHandle } from '../src/components/WallpaperGenerator';
+import { getQuotesWithoutCache } from '../src/services/wallpaperCache';
+import { getDarkBackground } from '../src/db';
 
 // Ignore the linking warning caused by React 19 StrictMode double-mounting
 // This is a known issue with expo-router and React 19's development mode behavior
@@ -12,14 +15,37 @@ LogBox.ignoreLogs(['Looks like you have configured linking in multiple places'])
 
 function TabsLayout() {
   const { colors, isDark } = useTheme();
+  const generatorRef = useRef<WallpaperGeneratorHandle>(null);
 
   useEffect(() => {
     // Register background task for daily quote updates
     registerBackgroundTask().catch(console.error);
+
+    // Generate wallpaper cache for quotes that don't have one
+    const generateMissingWallpapers = async () => {
+      try {
+        const isDarkBg = await getDarkBackground();
+        const quotesWithoutCache = await getQuotesWithoutCache(isDarkBg);
+
+        if (quotesWithoutCache.length > 0 && generatorRef.current) {
+          console.log(`[WallpaperCache] Generating ${quotesWithoutCache.length} missing wallpapers...`);
+          const count = await generatorRef.current.generateAll(quotesWithoutCache, isDarkBg);
+          console.log(`[WallpaperCache] Generated ${count} wallpapers`);
+        }
+      } catch (error) {
+        console.error('[WallpaperCache] Error generating wallpapers:', error);
+      }
+    };
+
+    // Small delay to ensure component is mounted
+    const timer = setTimeout(generateMissingWallpapers, 1000);
+    return () => clearTimeout(timer);
   }, []);
 
   return (
-    <Tabs
+    <>
+      <WallpaperGenerator ref={generatorRef} />
+      <Tabs
       screenOptions={{
         tabBarActiveTintColor: colors.primary,
         tabBarInactiveTintColor: colors.textMuted,
@@ -77,6 +103,7 @@ function TabsLayout() {
         }}
       />
     </Tabs>
+    </>
   );
 }
 

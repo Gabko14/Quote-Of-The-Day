@@ -1,21 +1,38 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
 import { rotateDailyQuoteInBackground } from './dailyQuote';
+import { getCachedWallpaperPath } from './wallpaperCache';
+import { setBothWallpapers } from './wallpaperService';
+import { getDarkBackground } from '../db';
 
 const BACKGROUND_TASK_NAME = 'DAILY_QUOTE_UPDATE';
 
 // Define the background task in global scope
-// Note: This only rotates the quote selection. Wallpaper generation requires
-// UI context and happens when the user opens the app.
 TaskManager.defineTask(BACKGROUND_TASK_NAME, async () => {
   try {
     console.log('[BackgroundTask] Running daily quote rotation task');
-    const success = await rotateDailyQuoteInBackground();
+    const quote = await rotateDailyQuoteInBackground();
 
-    if (success) {
-      console.log('[BackgroundTask] Daily quote rotated successfully');
+    if (!quote) {
+      console.log('[BackgroundTask] No quotes available');
+      return BackgroundTask.BackgroundTaskResult.Success;
+    }
+
+    console.log('[BackgroundTask] Quote rotated to:', quote.id, quote.text.substring(0, 30));
+
+    const isDark = await getDarkBackground();
+    const cachedPath = getCachedWallpaperPath(quote.id, isDark);
+
+    if (!cachedPath) {
+      console.log('[BackgroundTask] No cached wallpaper for quote', quote.id, '- user needs to open app');
+      return BackgroundTask.BackgroundTaskResult.Success;
+    }
+
+    const result = await setBothWallpapers(cachedPath);
+    if (result.success) {
+      console.log('[BackgroundTask] Wallpaper set successfully for quote', quote.id);
     } else {
-      console.log('[BackgroundTask] No quotes available to rotate');
+      console.log('[BackgroundTask] Failed to set wallpaper:', result.error);
     }
 
     return BackgroundTask.BackgroundTaskResult.Success;

@@ -4,6 +4,7 @@ import { useState, useEffect } from 'react';
 import { createQuote, updateQuote, getQuoteById, getAllCategories, Category } from '../../src/db';
 import { Picker } from '@react-native-picker/picker';
 import { useTheme } from '../../src/theme/ThemeContext';
+import { invalidateCache } from '../../src/services/wallpaperCache';
 
 export default function QuoteFormScreen() {
   const { colors } = useTheme();
@@ -51,11 +52,14 @@ export default function QuoteFormScreen() {
           category_id: catId,
         });
       } else {
-        await updateQuote(parseInt(id, 10), {
+        const quoteId = parseInt(id, 10);
+        await updateQuote(quoteId, {
           text: text.trim(),
           author: author.trim() || null,
           category_id: catId,
         });
+        // Invalidate cached wallpaper so it gets regenerated with new text
+        invalidateCache(quoteId);
       }
       router.back();
     } catch (error) {

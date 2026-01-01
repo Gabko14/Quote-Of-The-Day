@@ -56,8 +56,9 @@ app/
 
 ### Core Services (`src/services/`)
 - **dailyQuote.ts** - Quote rotation logic (one quote per day, avoids repeats)
-- **backgroundTask.ts** - Expo background task that rotates quotes every 12 hours
+- **backgroundTask.ts** - Expo background task that rotates quotes and sets wallpaper from cache
 - **wallpaperService.ts** - Bridge to native Android WallpaperModule
+- **wallpaperCache.ts** - Pre-generated wallpaper image cache per quote
 - **wallpaperGenerator.ts** - File management for generated wallpapers
 
 ### Data Layer (`src/db/`)
@@ -69,9 +70,13 @@ app/
 - `WallpaperPreview` component renders quote text, captures at device resolution
 - Native `WallpaperModule` (Kotlin) sets the image as Android wallpaper
 
-## Key Design Decisions
+## Background Wallpaper Architecture
 
-**Background task only rotates quotes**: Wallpaper image generation requires UI context and happens when user opens the app, not in background.
+Wallpaper images are pre-generated and cached when the app is open. The background task uses cached images to set wallpapers without UI context.
+
+- **Cache generation**: On app startup, `WallpaperGenerator` creates images for quotes missing from cache
+- **Cache invalidation**: Editing/deleting quotes or changing dark mode setting clears affected cache entries
+- **Background task**: Rotates quote and sets wallpaper from cache; logs warning if cache miss
 
 ## Code Patterns
 

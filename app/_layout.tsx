@@ -14,8 +14,7 @@ import { getDarkBackground } from '../src/db';
 LogBox.ignoreLogs(['Looks like you have configured linking in multiple places']);
 
 function TabsLayout() {
-  const { colors, isDark } = useTheme();
-  const generatorRef = useRef<WallpaperGeneratorHandle>(null);
+  const { colors } = useTheme();
 
   useEffect(() => {
     // Register background task for daily quote updates

@@ -62,7 +62,7 @@ export default function QuoteFormScreen() {
         invalidateCache(quoteId);
       }
       router.back();
-    } catch (error) {
+    } catch {
       Alert.alert('Error', 'Failed to save quote');
     } finally {
       setSaving(false);

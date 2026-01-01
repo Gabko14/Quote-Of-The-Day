@@ -1,19 +1,21 @@
 import * as BackgroundTask from 'expo-background-task';
 import * as TaskManager from 'expo-task-manager';
-import { updateWallpaperWithDailyQuote } from './dailyQuote';
+import { rotateDailyQuoteInBackground } from './dailyQuote';
 
 const BACKGROUND_TASK_NAME = 'DAILY_QUOTE_UPDATE';
 
 // Define the background task in global scope
+// Note: This only rotates the quote selection. Wallpaper generation requires
+// UI context and happens when the user opens the app.
 TaskManager.defineTask(BACKGROUND_TASK_NAME, async () => {
   try {
-    console.log('[BackgroundTask] Running daily quote update task');
-    const success = await updateWallpaperWithDailyQuote();
+    console.log('[BackgroundTask] Running daily quote rotation task');
+    const success = await rotateDailyQuoteInBackground();
 
     if (success) {
-      console.log('[BackgroundTask] Daily quote updated successfully');
+      console.log('[BackgroundTask] Daily quote rotated successfully');
     } else {
-      console.log('[BackgroundTask] No update performed');
+      console.log('[BackgroundTask] No quotes available to rotate');
     }
 
     return BackgroundTask.BackgroundTaskResult.Success;

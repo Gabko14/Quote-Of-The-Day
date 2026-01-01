@@ -1,10 +1,10 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Dimensions } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Quote, getDarkBackground, getQuoteCount } from '../src/db';
-import { WallpaperPreview } from '../src/components/WallpaperPreview';
-import { generateAndSaveWallpaper, cleanOldWallpapers } from '../src/services/wallpaperGenerator';
+import { WallpaperPreview, WallpaperPreviewHandle } from '../src/components/WallpaperPreview';
+import { cleanOldWallpapers } from '../src/services/wallpaperGenerator';
 import { setBothWallpapers } from '../src/services/wallpaperService';
 import { getDailyQuote } from '../src/services/dailyQuote';
 import { useTheme } from '../src/theme/ThemeContext';
@@ -16,6 +16,7 @@ export default function HomeScreen() {
   const [darkBg, setDarkBg] = useState(true);
   const [hasQuotes, setHasQuotes] = useState(false);
   const [settingWallpaper, setSettingWallpaper] = useState(false);
+  const previewRef = useRef<WallpaperPreviewHandle>(null);
 
   const loadQuote = useCallback(async () => {
     setLoading(true);
@@ -46,21 +47,18 @@ export default function HomeScreen() {
   );
 
   const handleSetWallpaper = async () => {
-    if (!quote) return;
+    if (!quote || !previewRef.current) return;
 
     setSettingWallpaper(true);
     try {
       // Get device screen dimensions for proper wallpaper size
       const { width, height } = Dimensions.get('screen');
 
-      // Generate wallpaper at device resolution
-      const wallpaperPath = await generateAndSaveWallpaper({
-        text: quote.text,
-        author: quote.author,
-        darkBackground: darkBg,
-        width: Math.round(width * 2), // 2x for higher DPI
-        height: Math.round(height * 2),
-      });
+      // Capture wallpaper at device resolution (2x for higher DPI)
+      const wallpaperPath = await previewRef.current.capture(
+        Math.round(width * 2),
+        Math.round(height * 2)
+      );
 
       if (!wallpaperPath) {
         Alert.alert('Error', 'Failed to generate wallpaper image');
@@ -128,6 +126,7 @@ export default function HomeScreen() {
       <Text style={styles.label}>Quote of the Day</Text>
 
       <WallpaperPreview
+        ref={previewRef}
         text={quote?.text ?? 'Add your first quote to get started'}
         author={quote?.author}
         darkBackground={darkBg}

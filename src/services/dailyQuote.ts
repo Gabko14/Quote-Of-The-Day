@@ -7,12 +7,8 @@ import {
   setLastQuoteDate,
   getQuoteById,
   getQuoteCount,
-  getDarkBackground,
   Quote,
 } from '../db';
-import { generateAndSaveWallpaper, cleanOldWallpapers } from './wallpaperGenerator';
-import { setBothWallpapers, isWallpaperSupported } from './wallpaperService';
-import { Dimensions } from 'react-native';
 
 function getTodayDateString(): string {
   const now = new Date();
@@ -76,33 +72,14 @@ export async function getDailyQuote(): Promise<Quote | null> {
   return random;
 }
 
-export async function updateWallpaperWithDailyQuote(): Promise<boolean> {
+// Background task version - only rotates quote, no wallpaper generation
+// (wallpaper generation requires UI context which isn't available in background)
+export async function rotateDailyQuoteInBackground(): Promise<boolean> {
   try {
     const quote = await getDailyQuote();
-    if (!quote) return false;
-
-    const darkBg = await getDarkBackground();
-    const { width, height } = Dimensions.get('screen');
-
-    const wallpaperPath = await generateAndSaveWallpaper({
-      text: quote.text,
-      author: quote.author,
-      darkBackground: darkBg,
-      width: Math.round(width * 2),
-      height: Math.round(height * 2),
-    });
-
-    if (!wallpaperPath) return false;
-
-    const supported = await isWallpaperSupported();
-    if (supported) {
-      await setBothWallpapers(wallpaperPath);
-    }
-
-    await cleanOldWallpapers(1);
-    return true;
+    return quote !== null;
   } catch (error) {
-    console.error('Error updating wallpaper with daily quote:', error);
+    console.error('Error rotating daily quote:', error);
     return false;
   }
 }

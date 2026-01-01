@@ -3,6 +3,7 @@ import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { getDarkBackground, setDarkBackground as saveDarkBackground } from '../src/db';
 import { useTheme } from '../src/theme/ThemeContext';
+import { invalidateCache } from '../src/services/wallpaperCache';
 
 export default function SettingsScreen() {
   const { colors, isDark, setDarkMode } = useTheme();
@@ -28,6 +29,8 @@ export default function SettingsScreen() {
   const handleDarkBackgroundToggle = async (value: boolean) => {
     setDarkBackground(value);
     await saveDarkBackground(value);
+    // Invalidate all cached wallpapers so they get regenerated with new style
+    invalidateCache();
   };
 
   const handleDarkModeToggle = (value: boolean) => {

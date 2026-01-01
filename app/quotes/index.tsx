@@ -5,6 +5,7 @@ import { useState, useCallback } from 'react';
 import { Quote, getAllQuotes, getQuotesByCategory, deleteQuote, getAllCategories, Category } from '../../src/db';
 import { Picker } from '@react-native-picker/picker';
 import { useTheme } from '../../src/theme/ThemeContext';
+import { invalidateCache } from '../../src/services/wallpaperCache';
 
 export default function QuotesScreen() {
   const { colors } = useTheme();
@@ -52,6 +53,7 @@ export default function QuotesScreen() {
           style: 'destructive',
           onPress: async () => {
             await deleteQuote(quote.id);
+            invalidateCache(quote.id);
             loadData();
           },
         },

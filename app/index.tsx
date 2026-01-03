@@ -1,14 +1,15 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useCallback, useEffect, useRef } from 'react';
+import { useState, useCallback, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Quote, getDarkBackground, getQuoteCount } from '../src/db';
 import { WallpaperPreview } from '../src/components/WallpaperPreview';
 import { setBothWallpapers } from '../src/services/wallpaperService';
 import { getDailyQuote } from '../src/services/dailyQuote';
 import { useTheme } from '../src/theme/ThemeContext';
-import { getCachedWallpaperPath } from '../src/services/wallpaperCache';
+import { getCachedWallpaperPath, getQuotesWithoutCache } from '../src/services/wallpaperCache';
 import { getBackgroundTaskStatus } from '../src/services/backgroundTask';
+import { WallpaperGenerator, WallpaperGeneratorHandle } from '../src/components/WallpaperGenerator';
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
@@ -19,43 +20,28 @@ export default function HomeScreen() {
   const [settingWallpaper, setSettingWallpaper] = useState(false);
   const [wallpaperReady, setWallpaperReady] = useState(false);
   const [taskRegistered, setTaskRegistered] = useState(false);
-  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
 
-  // Poll for cache readiness when quote exists but wallpaper isn't ready
-  useEffect(() => {
-    if (!quote || wallpaperReady) {
-      // No need to poll
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
+  const generatorRef = useRef<WallpaperGeneratorHandle>(null);
+  const isGeneratingRef = useRef(false);
+
+  const generateMissingWallpapers = useCallback(async (isDarkBg: boolean) => {
+    if (isGeneratingRef.current || !generatorRef.current) return;
+
+    try {
+      isGeneratingRef.current = true;
+      const quotesWithoutCache = await getQuotesWithoutCache(isDarkBg);
+
+      if (quotesWithoutCache.length > 0) {
+        console.log(`[WallpaperCache] Generating ${quotesWithoutCache.length} missing wallpapers...`);
+        const count = await generatorRef.current.generateAll(quotesWithoutCache, isDarkBg);
+        console.log(`[WallpaperCache] Generated ${count} wallpapers`);
       }
-      return;
+    } catch (error) {
+      console.error('[WallpaperCache] Error generating wallpapers:', error);
+    } finally {
+      isGeneratingRef.current = false;
     }
-
-    // Poll every 500ms for cache availability (layout generates it)
-    pollIntervalRef.current = setInterval(() => {
-      const cachedPath = getCachedWallpaperPath(quote.id, darkBg);
-      if (cachedPath) {
-        setWallpaperReady(true);
-      }
-    }, 500);
-
-    // Stop polling after 30 seconds (timeout)
-    const timeout = setTimeout(() => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-    }, 30000);
-
-    return () => {
-      if (pollIntervalRef.current) {
-        clearInterval(pollIntervalRef.current);
-        pollIntervalRef.current = null;
-      }
-      clearTimeout(timeout);
-    };
-  }, [quote, wallpaperReady, darkBg]);
+  }, []);
 
   const loadQuote = useCallback(async () => {
     setLoading(true);
@@ -76,10 +62,19 @@ export default function HomeScreen() {
       const dailyQuote = await getDailyQuote();
       setQuote(dailyQuote);
 
-      // Check if wallpaper is cached (single source of truth for readiness)
+      // Check if wallpaper is cached
       if (dailyQuote) {
         const cachedPath = getCachedWallpaperPath(dailyQuote.id, dark);
-        setWallpaperReady(!!cachedPath);
+        if (cachedPath) {
+          setWallpaperReady(true);
+        } else {
+          // Generate missing wallpapers (including this one)
+          setWallpaperReady(false);
+          await generateMissingWallpapers(dark);
+          // Check again after generation
+          const newPath = getCachedWallpaperPath(dailyQuote.id, dark);
+          setWallpaperReady(!!newPath);
+        }
       } else {
         setWallpaperReady(false);
       }
@@ -90,7 +85,7 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  }, []);
+  }, [generateMissingWallpapers]);
 
   useFocusEffect(
     useCallback(() => {
@@ -182,6 +177,7 @@ export default function HomeScreen() {
   return (
     <View style={styles.container}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
+      <WallpaperGenerator ref={generatorRef} />
       <Text style={styles.label}>Quote of the Day</Text>
 
       <WallpaperPreview

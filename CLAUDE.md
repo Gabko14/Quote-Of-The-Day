@@ -30,8 +30,9 @@ npm run android        # Build and run on Android
 # After native code changes (app.json plugins, native modules)
 npx expo prebuild --clean && npm run android
 
-# Type checking
-npx tsc --noEmit
+# Type checking and build
+npx tsc --noEmit       # Type check
+npx expo export        # Bundle JS (catches import/bundling errors)
 
 # Database inspection (SQLite CLI available)
 sqlite3 <path-to-quotes.db>
@@ -130,6 +131,7 @@ const quotes = await db.getAllAsync<Quote>('SELECT * FROM quotes');
 ```bash
 npx tsc --noEmit
 npm run lint
+npx expo export
 ```
 
 - [ ] App works offline (no network required for core functionality)

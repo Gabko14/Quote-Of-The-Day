@@ -67,6 +67,12 @@ export default function QuotesScreen() {
     return cat?.name;
   };
 
+  const getCategoryNames = (categoryIds: number[]) => {
+    return categoryIds
+      .map(id => categories.find(c => c.id === id)?.name)
+      .filter((name): name is string => !!name);
+  };
+
   const styles = StyleSheet.create({
     container: {
       flex: 1,
@@ -143,13 +149,17 @@ export default function QuotesScreen() {
       color: colors.textSecondary,
       marginTop: 6,
     },
+    categoryBadges: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 6,
+      marginTop: 8,
+    },
     categoryBadge: {
       backgroundColor: colors.categoryBadge,
       paddingHorizontal: 8,
       paddingVertical: 4,
       borderRadius: 6,
-      alignSelf: 'flex-start',
-      marginTop: 8,
     },
     categoryText: {
       fontSize: 12,
@@ -175,34 +185,59 @@ export default function QuotesScreen() {
       shadowOpacity: 0.25,
       shadowRadius: 4,
     },
+    importFab: {
+      position: 'absolute',
+      right: 20,
+      bottom: 88,
+      width: 56,
+      height: 56,
+      borderRadius: 28,
+      backgroundColor: colors.surface,
+      justifyContent: 'center',
+      alignItems: 'center',
+      elevation: 4,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 2 },
+      shadowOpacity: 0.25,
+      shadowRadius: 4,
+      borderWidth: 2,
+      borderColor: colors.primary,
+    },
   });
 
-  const renderQuote = ({ item }: { item: Quote }) => (
-    <Link href={`/quotes/${item.id}`} asChild>
-      <Pressable style={styles.quoteItem}>
-        <View style={styles.quoteContent}>
-          <Text style={styles.quoteText} numberOfLines={2}>
-            "{item.text}"
-          </Text>
-          {item.author && (
-            <Text style={styles.authorText}>— {item.author}</Text>
-          )}
-          {item.category_id && (
-            <View style={styles.categoryBadge}>
-              <Text style={styles.categoryText}>{getCategoryName(item.category_id)}</Text>
-            </View>
-          )}
-        </View>
-        <Pressable
-          style={styles.deleteButton}
-          onPress={() => handleDelete(item)}
-          hitSlop={10}
-        >
-          <Ionicons name="trash-outline" size={20} color={colors.danger} />
+  const renderQuote = ({ item }: { item: Quote }) => {
+    const categoryNames = getCategoryNames(item.category_ids);
+    return (
+      <Link href={`/quotes/${item.id}`} asChild>
+        <Pressable style={styles.quoteItem}>
+          <View style={styles.quoteContent}>
+            <Text style={styles.quoteText} numberOfLines={2}>
+              "{item.text}"
+            </Text>
+            {item.author && (
+              <Text style={styles.authorText}>— {item.author}</Text>
+            )}
+            {categoryNames.length > 0 && (
+              <View style={styles.categoryBadges}>
+                {categoryNames.map((name, index) => (
+                  <View key={index} style={styles.categoryBadge}>
+                    <Text style={styles.categoryText}>{name}</Text>
+                  </View>
+                ))}
+              </View>
+            )}
+          </View>
+          <Pressable
+            style={styles.deleteButton}
+            onPress={() => handleDelete(item)}
+            hitSlop={10}
+          >
+            <Ionicons name="trash-outline" size={20} color={colors.danger} />
+          </Pressable>
         </Pressable>
-      </Pressable>
-    </Link>
-  );
+      </Link>
+    );
+  };
 
   if (loading) {
     return (
@@ -251,6 +286,11 @@ export default function QuotesScreen() {
           contentContainerStyle={styles.list}
         />
       )}
+      <Link href="/quotes/import" asChild>
+        <Pressable style={styles.importFab}>
+          <Ionicons name="cloud-upload-outline" size={26} color={colors.primary} />
+        </Pressable>
+      </Link>
       <Link href="/quotes/new" asChild>
         <Pressable style={styles.fab}>
           <Ionicons name="add" size={28} color="#fff" />

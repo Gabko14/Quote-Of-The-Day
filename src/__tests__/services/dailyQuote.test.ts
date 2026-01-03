@@ -85,8 +85,8 @@ describe('dailyQuote service', () => {
   });
 
   describe('rotateQuote', () => {
-    const mockQuote1 = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, created_at: '' };
-    const mockQuote2 = { id: 2, text: 'Quote 2', author: 'Author 2', category_id: null, created_at: '' };
+    const mockQuote1 = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, category_ids: [], created_at: '' };
+    const mockQuote2 = { id: 2, text: 'Quote 2', author: 'Author 2', category_id: null, category_ids: [], created_at: '' };
 
     it('returns null when there are no quotes', async () => {
       mockGetQuoteCount.mockResolvedValue(0);
@@ -139,7 +139,7 @@ describe('dailyQuote service', () => {
   });
 
   describe('rotateQuoteIfNeeded', () => {
-    const mockQuote = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, created_at: '' };
+    const mockQuote = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, category_ids: [], created_at: '' };
 
     it('does not rotate when quote was set today', async () => {
       mockDate('2025-01-15T10:00:00Z');
@@ -155,7 +155,7 @@ describe('dailyQuote service', () => {
     });
 
     it('rotates when date has changed', async () => {
-      const newQuote = { id: 2, text: 'Quote 2', author: 'Author 2', category_id: null, created_at: '' };
+      const newQuote = { id: 2, text: 'Quote 2', author: 'Author 2', category_id: null, category_ids: [], created_at: '' };
       mockDate('2025-01-15T10:00:00Z');
       mockGetLastQuoteDate.mockResolvedValue('2025-01-14');
       mockGetQuoteCount.mockResolvedValue(2);
@@ -180,7 +180,7 @@ describe('dailyQuote service', () => {
   });
 
   describe('getDailyQuote', () => {
-    const mockQuote = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, created_at: '' };
+    const mockQuote = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, category_ids: [], created_at: '' };
 
     it('returns rotated quote when rotation is needed', async () => {
       mockDate('2025-01-15T10:00:00Z');

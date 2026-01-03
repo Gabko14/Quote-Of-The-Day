@@ -76,11 +76,22 @@ export default function HomeScreen() {
 
     setSettingWallpaper(true);
     try {
-      // Use cached wallpaper (same as background task uses)
-      const cachedPath = getCachedWallpaperPath(quote.id, darkBg);
+      // Recheck cache right before use (guard against invalidation race condition)
+      let cachedPath = getCachedWallpaperPath(quote.id, darkBg);
+      
+      if (!cachedPath) {
+        // Cache was invalidated (e.g., dark mode toggle) - regenerate
+        await generateMissing();
+        cachedPath = getCachedWallpaperPath(quote.id, darkBg);
+        
+        if (!cachedPath) {
+          Alert.alert('Error', 'Failed to generate wallpaper. Please try again.');
+          return;
+        }
+      }
 
       // Set as wallpaper
-      const result = await setBothWallpapers(cachedPath!);
+      const result = await setBothWallpapers(cachedPath);
 
       if (result.success) {
         Alert.alert('Success', 'Wallpaper has been set!');

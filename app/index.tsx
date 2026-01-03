@@ -1,6 +1,6 @@
 import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useEffect, useRef } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Quote, getDarkBackground, getQuoteCount } from '../src/db';
 import { WallpaperPreview } from '../src/components/WallpaperPreview';
@@ -9,11 +9,9 @@ import { getDailyQuote } from '../src/services/dailyQuote';
 import { useTheme } from '../src/theme/ThemeContext';
 import { getCachedWallpaperPath } from '../src/services/wallpaperCache';
 import { getBackgroundTaskStatus } from '../src/services/backgroundTask';
-import { useWallpaperCache } from '../src/context/WallpaperCacheContext';
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
-  const { generateMissing } = useWallpaperCache();
   const [quote, setQuote] = useState<Quote | null>(null);
   const [loading, setLoading] = useState(true);
   const [darkBg, setDarkBg] = useState(true);
@@ -21,6 +19,43 @@ export default function HomeScreen() {
   const [settingWallpaper, setSettingWallpaper] = useState(false);
   const [wallpaperReady, setWallpaperReady] = useState(false);
   const [taskRegistered, setTaskRegistered] = useState(false);
+  const pollIntervalRef = useRef<ReturnType<typeof setInterval> | null>(null);
+
+  // Poll for cache readiness when quote exists but wallpaper isn't ready
+  useEffect(() => {
+    if (!quote || wallpaperReady) {
+      // No need to poll
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      return;
+    }
+
+    // Poll every 500ms for cache availability (layout generates it)
+    pollIntervalRef.current = setInterval(() => {
+      const cachedPath = getCachedWallpaperPath(quote.id, darkBg);
+      if (cachedPath) {
+        setWallpaperReady(true);
+      }
+    }, 500);
+
+    // Stop polling after 30 seconds (timeout)
+    const timeout = setTimeout(() => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+    }, 30000);
+
+    return () => {
+      if (pollIntervalRef.current) {
+        clearInterval(pollIntervalRef.current);
+        pollIntervalRef.current = null;
+      }
+      clearTimeout(timeout);
+    };
+  }, [quote, wallpaperReady, darkBg]);
 
   const loadQuote = useCallback(async () => {
     setLoading(true);
@@ -30,6 +65,7 @@ export default function HomeScreen() {
 
       if (count === 0) {
         setQuote(null);
+        setWallpaperReady(false);
         return;
       }
 
@@ -43,16 +79,7 @@ export default function HomeScreen() {
       // Check if wallpaper is cached (single source of truth for readiness)
       if (dailyQuote) {
         const cachedPath = getCachedWallpaperPath(dailyQuote.id, dark);
-        if (cachedPath) {
-          setWallpaperReady(true);
-        } else {
-          // Cache missing - trigger generation and re-check
-          setWallpaperReady(false);
-          generateMissing().then(() => {
-            const newPath = getCachedWallpaperPath(dailyQuote.id, dark);
-            setWallpaperReady(!!newPath);
-          });
-        }
+        setWallpaperReady(!!cachedPath);
       } else {
         setWallpaperReady(false);
       }
@@ -63,7 +90,7 @@ export default function HomeScreen() {
     } finally {
       setLoading(false);
     }
-  }, [generateMissing]);
+  }, []);
 
   useFocusEffect(
     useCallback(() => {

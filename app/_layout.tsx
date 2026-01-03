@@ -16,9 +16,13 @@ LogBox.ignoreLogs(['Looks like you have configured linking in multiple places'])
 function TabsLayout() {
   const { colors } = useTheme();
   const generatorRef = useRef<WallpaperGeneratorHandle>(null);
+  const isGeneratingRef = useRef(false);
 
   const generateMissingWallpapers = useCallback(async () => {
+    if (isGeneratingRef.current) return; // Prevent overlapping calls
+
     try {
+      isGeneratingRef.current = true;
       const isDarkBg = await getDarkBackground();
       const quotesWithoutCache = await getQuotesWithoutCache(isDarkBg);
 
@@ -29,6 +33,8 @@ function TabsLayout() {
       }
     } catch (error) {
       console.error('[WallpaperCache] Error generating wallpapers:', error);
+    } finally {
+      isGeneratingRef.current = false;
     }
   }, []);
 
@@ -36,9 +42,14 @@ function TabsLayout() {
     // Register background task for daily quote updates
     registerBackgroundTask().catch(console.error);
 
-    // Generate missing wallpapers on initial mount (delay to ensure component is ready)
+    // Generate missing wallpapers periodically (handles new quotes added while app is open)
     const timer = setTimeout(generateMissingWallpapers, 1000);
-    return () => clearTimeout(timer);
+    const interval = setInterval(generateMissingWallpapers, 3000);
+
+    return () => {
+      clearTimeout(timer);
+      clearInterval(interval);
+    };
   }, [generateMissingWallpapers]);
 
   return (

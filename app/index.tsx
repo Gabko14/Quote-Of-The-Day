@@ -89,7 +89,9 @@ export default function HomeScreen() {
 
   useFocusEffect(
     useCallback(() => {
-      loadQuote();
+      // Small delay to ensure WallpaperGenerator is fully mounted
+      const timer = setTimeout(loadQuote, 100);
+      return () => clearTimeout(timer);
     }, [loadQuote])
   );
 
@@ -166,57 +168,56 @@ export default function HomeScreen() {
     },
   });
 
-  if (loading) {
-    return (
-      <View style={styles.container}>
-        <ActivityIndicator size="large" color={colors.primary} />
-      </View>
-    );
-  }
-
   return (
     <View style={styles.container}>
       <StatusBar style={isDark ? 'light' : 'dark'} />
       <WallpaperGenerator ref={generatorRef} />
-      <Text style={styles.label}>Quote of the Day</Text>
 
-      <WallpaperPreview
-        text={quote?.text ?? 'Add your first quote to get started'}
-        author={quote?.author}
-        darkBackground={darkBg}
-        style={styles.preview}
-      />
+      {loading ? (
+        <ActivityIndicator size="large" color={colors.primary} />
+      ) : (
+        <>
+          <Text style={styles.label}>Quote of the Day</Text>
 
-      <Pressable
-        style={[styles.button, (!wallpaperReady || settingWallpaper) && styles.buttonDisabled]}
-        onPress={handleSetWallpaper}
-        disabled={!wallpaperReady || settingWallpaper}
-      >
-        {settingWallpaper ? (
-          <ActivityIndicator size="small" color="#fff" />
-        ) : (
-          <Text style={styles.buttonText}>
-            {hasQuotes && !wallpaperReady ? 'Generating...' : 'Set as Wallpaper'}
-          </Text>
-        )}
-      </Pressable>
-
-      {hasQuotes && (
-        <View style={styles.statusContainer}>
-          <View
-            style={[
-              styles.statusDot,
-              { backgroundColor: wallpaperReady && taskRegistered ? '#4CAF50' : colors.textMuted },
-            ]}
+          <WallpaperPreview
+            text={quote?.text ?? 'Add your first quote to get started'}
+            author={quote?.author}
+            darkBackground={darkBg}
+            style={styles.preview}
           />
-          <Text style={styles.statusText}>
-            {!wallpaperReady
-              ? 'Generating wallpaper...'
-              : taskRegistered
-                ? 'Auto-update active - changes daily'
-                : 'Auto-update unavailable'}
-          </Text>
-        </View>
+
+          <Pressable
+            style={[styles.button, (!wallpaperReady || settingWallpaper) && styles.buttonDisabled]}
+            onPress={handleSetWallpaper}
+            disabled={!wallpaperReady || settingWallpaper}
+          >
+            {settingWallpaper ? (
+              <ActivityIndicator size="small" color="#fff" />
+            ) : (
+              <Text style={styles.buttonText}>
+                {hasQuotes && !wallpaperReady ? 'Generating...' : 'Set as Wallpaper'}
+              </Text>
+            )}
+          </Pressable>
+
+          {hasQuotes && (
+            <View style={styles.statusContainer}>
+              <View
+                style={[
+                  styles.statusDot,
+                  { backgroundColor: wallpaperReady && taskRegistered ? '#4CAF50' : colors.textMuted },
+                ]}
+              />
+              <Text style={styles.statusText}>
+                {!wallpaperReady
+                  ? 'Generating wallpaper...'
+                  : taskRegistered
+                    ? 'Auto-update active - changes daily'
+                    : 'Auto-update unavailable'}
+              </Text>
+            </View>
+          )}
+        </>
       )}
     </View>
   );

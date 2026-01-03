@@ -1,13 +1,13 @@
-import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert, Dimensions } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import { StatusBar } from 'expo-status-bar';
-import { useState, useCallback, useRef } from 'react';
+import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Quote, getDarkBackground, getQuoteCount } from '../src/db';
-import { WallpaperPreview, WallpaperPreviewHandle } from '../src/components/WallpaperPreview';
-import { cleanOldWallpapers } from '../src/services/wallpaperGenerator';
+import { WallpaperPreview } from '../src/components/WallpaperPreview';
 import { setBothWallpapers } from '../src/services/wallpaperService';
 import { getDailyQuote } from '../src/services/dailyQuote';
 import { useTheme } from '../src/theme/ThemeContext';
+import { getCachedWallpaperPath } from '../src/services/wallpaperCache';
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
@@ -16,7 +16,6 @@ export default function HomeScreen() {
   const [darkBg, setDarkBg] = useState(true);
   const [hasQuotes, setHasQuotes] = useState(false);
   const [settingWallpaper, setSettingWallpaper] = useState(false);
-  const previewRef = useRef<WallpaperPreviewHandle>(null);
 
   const loadQuote = useCallback(async () => {
     setLoading(true);
@@ -47,36 +46,29 @@ export default function HomeScreen() {
   );
 
   const handleSetWallpaper = async () => {
-    if (!quote || !previewRef.current) return;
+    if (!quote) return;
 
     setSettingWallpaper(true);
     try {
-      // Get device screen dimensions for proper wallpaper size
-      const { width, height } = Dimensions.get('screen');
+      // Use cached wallpaper (same as background task uses)
+      const cachedPath = getCachedWallpaperPath(quote.id, darkBg);
 
-      // Capture wallpaper at device resolution (2x for higher DPI)
-      const wallpaperPath = await previewRef.current.capture(
-        Math.round(width * 2),
-        Math.round(height * 2)
-      );
-
-      if (!wallpaperPath) {
-        Alert.alert('Error', 'Failed to generate wallpaper image');
+      if (!cachedPath) {
+        Alert.alert(
+          'Wallpaper Not Ready',
+          'The wallpaper is still being generated. Please wait a moment and try again.'
+        );
         return;
       }
 
       // Set as wallpaper
-      const result = await setBothWallpapers(wallpaperPath);
+      const result = await setBothWallpapers(cachedPath);
 
       if (result.success) {
         Alert.alert('Success', 'Wallpaper has been set!');
       } else {
         Alert.alert('Error', result.error || 'Failed to set wallpaper');
-        return;
       }
-
-      // Clean up old wallpapers, keep only the latest
-      await cleanOldWallpapers(1);
     } catch (error) {
       console.error('Error setting wallpaper:', error);
       Alert.alert('Error', 'Failed to set wallpaper');
@@ -133,7 +125,6 @@ export default function HomeScreen() {
       <Text style={styles.label}>Quote of the Day</Text>
 
       <WallpaperPreview
-        ref={previewRef}
         text={quote?.text ?? 'Add your first quote to get started'}
         author={quote?.author}
         darkBackground={darkBg}

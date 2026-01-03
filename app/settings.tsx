@@ -4,6 +4,7 @@ import { useFocusEffect } from 'expo-router';
 import { getDarkBackground, setDarkBackground as saveDarkBackground } from '../src/db';
 import { useTheme } from '../src/theme/ThemeContext';
 import { invalidateCache } from '../src/services/wallpaperCache';
+import { getBackgroundTaskStatus } from '../src/services/backgroundTask';
 
 export default function SettingsScreen() {
   const { colors, isDark, setDarkMode } = useTheme();

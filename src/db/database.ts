@@ -23,6 +23,7 @@ async function initDatabase(): Promise<SQLite.SQLiteDatabase> {
 }
 
 async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
+  // Initial schema
   await database.execAsync(`
     CREATE TABLE IF NOT EXISTS categories (
       id INTEGER PRIMARY KEY AUTOINCREMENT,
@@ -45,6 +46,23 @@ async function runMigrations(database: SQLite.SQLiteDatabase): Promise<void> {
 
     INSERT OR IGNORE INTO settings (key, value) VALUES ('darkBackground', 'true');
     INSERT OR IGNORE INTO settings (key, value) VALUES ('darkMode', 'true');
+  `);
+
+  // Migration: Add quote_categories junction table for multi-category support
+  await database.execAsync(`
+    CREATE TABLE IF NOT EXISTS quote_categories (
+      quote_id INTEGER NOT NULL,
+      category_id INTEGER NOT NULL,
+      PRIMARY KEY (quote_id, category_id),
+      FOREIGN KEY (quote_id) REFERENCES quotes(id) ON DELETE CASCADE,
+      FOREIGN KEY (category_id) REFERENCES categories(id) ON DELETE CASCADE
+    );
+  `);
+
+  // Migrate existing category_id data to junction table (only for quotes not yet migrated)
+  await database.execAsync(`
+    INSERT OR IGNORE INTO quote_categories (quote_id, category_id)
+    SELECT id, category_id FROM quotes WHERE category_id IS NOT NULL;
   `);
 }
 

@@ -102,6 +102,13 @@ function TabsLayout() {
           href: null,
         }}
       />
+      <Tabs.Screen
+        name="quotes/import"
+        options={{
+          href: null,
+          title: 'Import Quotes',
+        }}
+      />
     </Tabs>
     </>
   );

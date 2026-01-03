@@ -52,6 +52,7 @@ app/
   quotes/
     index.tsx      # Quote list with category filter
     [id].tsx       # Add/edit quote form
+    import.tsx     # Bulk import: paste quotes, AI parses, preview & save
 ```
 
 ### Core Services (`src/services/`)
@@ -60,6 +61,7 @@ app/
 - **wallpaperService.ts** - Bridge to native Android WallpaperModule
 - **wallpaperCache.ts** - Pre-generated wallpaper image cache per quote
 - **wallpaperGenerator.ts** - File management for generated wallpapers
+- **bulkImport.ts** - API client for Cloudflare Worker (quote parsing)
 
 ### Data Layer (`src/db/`)
 - **database.ts** - SQLite singleton with migrations (quotes, categories, settings tables)
@@ -69,6 +71,13 @@ app/
 - Uses `react-native-view-shot` to capture a React Native View as PNG
 - `WallpaperPreview` component renders quote text, captures at device resolution
 - Native `WallpaperModule` (Kotlin) sets the image as Android wallpaper
+
+### Cloudflare Worker (`worker/`)
+- Parses bulk quote text using XAI (Grok) API
+- Matches quotes to existing categories
+- Deployed at: `https://quote-parser.gabkolistiak.workers.dev`
+- Worker commands: `cd worker && npm run dev` (local), `npm run deploy` (production)
+- XAI API key stored as Cloudflare secret, not in code
 
 ## Background Wallpaper Architecture
 

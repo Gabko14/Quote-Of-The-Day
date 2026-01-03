@@ -130,7 +130,7 @@ async function parseQuotesWithXAI(
   let jsonContent: string;
   try {
     jsonContent = extractJSON(content);
-  } catch (e) {
+  } catch {
     console.error('Failed to extract JSON. Raw content:', content.substring(0, 500));
     throw new Error('Failed to extract JSON from response');
   }

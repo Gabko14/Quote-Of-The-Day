@@ -61,12 +61,6 @@ export default function QuotesScreen() {
     );
   };
 
-  const getCategoryName = (categoryId: number | null) => {
-    if (!categoryId) return null;
-    const cat = categories.find(c => c.id === categoryId);
-    return cat?.name;
-  };
-
   const getCategoryNames = (categoryIds: number[]) => {
     return categoryIds
       .map(id => categories.find(c => c.id === id)?.name)

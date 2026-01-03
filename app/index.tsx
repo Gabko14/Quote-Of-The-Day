@@ -173,7 +173,7 @@ export default function HomeScreen() {
           <ActivityIndicator size="small" color="#fff" />
         ) : (
           <Text style={styles.buttonText}>
-            {wallpaperReady ? 'Set as Wallpaper' : 'Generating...'}
+            {hasQuotes && !wallpaperReady ? 'Generating...' : 'Set as Wallpaper'}
           </Text>
         )}
       </Pressable>

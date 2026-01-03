@@ -40,6 +40,21 @@ sqlite3 <path-to-quotes.db>
 gh pr create, gh issue list, etc.
 ```
 
+## Git Workflow
+
+- **Never push directly to `master`** - Always create a feature branch
+- Create PRs using GitHub CLI: `gh pr create`
+- Branch naming: `feature/description` or `fix/description`
+
+```bash
+# Example workflow
+git checkout -b feature/add-dark-mode
+# ... make changes ...
+git add . && git commit -m "Add dark mode support"
+git push -u origin feature/add-dark-mode
+gh pr create --fill
+```
+
 ## Architecture
 
 ### App Structure (expo-router)
@@ -60,7 +75,6 @@ app/
 - **backgroundTask.ts** - Expo background task that rotates quotes and sets wallpaper from cache
 - **wallpaperService.ts** - Bridge to native Android WallpaperModule
 - **wallpaperCache.ts** - Pre-generated wallpaper image cache per quote
-- **wallpaperGenerator.ts** - File management for generated wallpapers
 - **bulkImport.ts** - API client for Cloudflare Worker (quote parsing)
 
 ### Data Layer (`src/db/`)

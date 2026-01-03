@@ -43,16 +43,24 @@ gh pr create, gh issue list, etc.
 ## Git Workflow
 
 - **Never push directly to `master`** - Always create a feature branch
+- **New task = new branch** - Create a fresh branch from master for each task
+- **Clean up after merge** - Delete the branch locally and remotely after PR is merged
 - Create PRs using GitHub CLI: `gh pr create`
 - Branch naming: `feature/description` or `fix/description`
 
 ```bash
-# Example workflow
+# Starting a new task
+git checkout master && git pull
 git checkout -b feature/add-dark-mode
 # ... make changes ...
 git add . && git commit -m "Add dark mode support"
 git push -u origin feature/add-dark-mode
 gh pr create --fill
+
+# After PR is merged
+git checkout master && git pull
+git branch -d feature/add-dark-mode
+git push origin --delete feature/add-dark-mode
 ```
 
 ## Architecture

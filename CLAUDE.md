@@ -107,6 +107,7 @@ const quotes = await db.getAllAsync<Quote>('SELECT * FROM quotes');
 
 ```bash
 npx tsc --noEmit
+npm run lint
 ```
 
 - [ ] App works offline (no network required for core functionality)

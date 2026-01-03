@@ -46,5 +46,5 @@ jobs:
           # Claude args with allowed tools - required for MCP server initialization in tag mode
           # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
           # or https://code.claude.com/docs/en/cli-reference for available options
-          claude_args: '--allowed-tools "mcp__github_comment__*,Bash(gh issue view:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)" --model claude-opus-4-5-20251101'
+          claude_args: '--allowed-tools "mcp__github_comment__*,Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)" --model claude-opus-4-5-20251101'
 

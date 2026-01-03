@@ -150,13 +150,20 @@ async function parseQuotesWithXAI(
     throw new Error('Invalid response structure: quotes is not an array');
   }
 
-  // Validate each quote and ensure categories match exactly
-  const validCategories = new Set(categories);
+  // Validate each quote and ensure categories match (case-insensitive)
+  // Build a map of lowercase -> original case for matching
+  const categoryMap = new Map<string, string>();
+  for (const cat of categories) {
+    categoryMap.set(cat.toLowerCase(), cat);
+  }
+
   return parsed.quotes.map((quote) => ({
     text: String(quote.text || '').trim(),
     author: quote.author ? String(quote.author).trim() : null,
     categories: Array.isArray(quote.categories)
-      ? quote.categories.filter((cat: string) => validCategories.has(cat))
+      ? quote.categories
+          .map((cat: string) => categoryMap.get(cat.toLowerCase()))
+          .filter((cat): cat is string => cat !== undefined)
       : [],
   })).filter((quote) => quote.text.length > 0);
 }

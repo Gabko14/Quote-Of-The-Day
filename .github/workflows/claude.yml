@@ -19,35 +19,74 @@ jobs:
       (github.event_name == 'issues' && (contains(github.event.issue.body, '@claude') || contains(github.event.issue.title, '@claude')))
     runs-on: ubuntu-latest
     permissions:
-      contents: read
-      pull-requests: read
+      contents: write
+      pull-requests: write
       issues: write
       id-token: write
-      actions: read # Required for Claude to read CI results on PRs
+      actions: read
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
         with:
           fetch-depth: 1
 
+      - name: Get comment summary
+        id: comments
+        if: github.event.issue.number != ''
+        env:
+          GH_TOKEN: ${{ github.token }}
+          CURRENT_COMMENT_ID: ${{ github.event.comment.id }}
+        run: |
+          COMMENTS=$(gh api repos/${{ github.repository }}/issues/${{ github.event.issue.number }}/comments \
+            --jq '[.[] | {id: .id, login: .user.login, date: .created_at}]')
+          COUNT=$(echo "$COMMENTS" | jq 'length')
+          if [ "$COUNT" -gt 0 ]; then
+            SUMMARY=$(echo "$COMMENTS" | jq -r --arg current "$CURRENT_COMMENT_ID" \
+              '.[] | "- @\(.login) (\(.date | split("T")[0]))" + (if (.id | tostring) == $current then " ← current" else "" end)')
+            {
+              echo "summary<<EOF"
+              echo ""
+              echo "CONVERSATION HISTORY ($COUNT comments):"
+              echo "$SUMMARY"
+              echo ""
+              echo "To see full conversation: \`gh issue view ${{ github.event.issue.number }} --comments\`"
+              echo "EOF"
+            } >> $GITHUB_OUTPUT
+          else
+            echo "summary=" >> $GITHUB_OUTPUT
+          fi
+
       - name: Run Claude Code
         id: claude
         uses: anthropics/claude-code-action@v1
         with:
           claude_code_oauth_token: ${{ secrets.CLAUDE_CODE_OAUTH_TOKEN }}
-
-          # This is an optional setting that allows Claude to read CI results on PRs
-          additional_permissions: |
-            actions: read
-
+          show_full_output: true
+          claude_args: |
+            --model claude-opus-4-5-20251101
+            --allowedTools "Edit,Write,Bash(git:*),Bash(gh issue:*),Bash(gh pr:*),Bash(gh search:*),Bash(npm:*),Bash(npx:*)"
           prompt: |
-            You were tagged with @claude. ALWAYS respond to the user's message.
+            ## Context
 
-            - If asked a question, answer it
-            - If given a task, do it or explain why you can't
+            REPO: ${{ github.repository }}
+            ISSUE NUMBER: ${{ github.event.issue.number }}
+            ISSUE TITLE: ${{ github.event.issue.title }}
+            ISSUE BODY: ${{ github.event.issue.body }}
+            COMMENT: ${{ github.event.comment.body }}
+            ${{ steps.comments.outputs.summary }}
 
-          # Claude args with allowed tools - required for MCP server initialization in tag mode
-          # See https://github.com/anthropics/claude-code-action/blob/main/docs/usage.md
-          # or https://code.claude.com/docs/en/cli-reference for available options
-          claude_args: '--allowed-tools "mcp__github_comment__*,Bash(gh issue view:*),Bash(gh issue create:*),Bash(gh search:*),Bash(gh issue list:*),Bash(gh pr comment:*),Bash(gh pr diff:*),Bash(gh pr view:*),Bash(gh pr list:*)" --model claude-opus-4-5-20251101'
+            ## Your Task
 
+            Read the issue and comment above. Do what is asked of you. When you are tagged with @claude, you MUST always respond with a comment on the issue.
+
+            ## Creating Pull Requests
+
+            When you implement code changes (features, fixes, improvements):
+            1. First check if a PR already exists for this issue: `gh pr list --search "issue-<number>"`
+            2. If a PR exists, push to the existing branch and comment on the PR
+            3. If no PR exists:
+               - Create a new branch: `git checkout -b claude/issue-<number>-<short-description>`
+               - Commit and push your changes
+               - Create a PR using `gh pr create` linking to the issue
+
+            Refer to CLAUDE.md for project-specific guidance.

@@ -46,9 +46,9 @@ export default function ImportScreen() {
     setCategories(cats);
   };
 
-  const getCategoryIdsByNames = (names: string[]): number[] => {
+  const getCategoryIdsByNames = (names: string[], cats: Category[] = categories): number[] => {
     return names
-      .map((name) => categories.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id)
+      .map((name) => cats.find((c) => c.name.toLowerCase() === name.toLowerCase())?.id)
       .filter((id): id is number => id !== undefined);
   };
 
@@ -81,7 +81,11 @@ export default function ImportScreen() {
     }).start();
 
     try {
-      const categoryNames = categories.map((c) => c.name);
+      // Refresh categories to get the latest data (e.g., newly added categories)
+      const latestCategories = await getAllCategories();
+      setCategories(latestCategories);
+
+      const categoryNames = latestCategories.map((c) => c.name);
       const parsed = await parseQuotesFromText(inputText, categoryNames);
 
       Animated.timing(progressAnim, {
@@ -99,7 +103,7 @@ export default function ImportScreen() {
       const editableQuotes: EditableQuote[] = parsed.map((q, index) => ({
         ...q,
         id: `${Date.now()}-${index}`,
-        categoryIds: getCategoryIdsByNames(q.categories),
+        categoryIds: getCategoryIdsByNames(q.categories, latestCategories),
       }));
 
       setQuotes(editableQuotes);

@@ -4,8 +4,7 @@ export type SettingKey =
   | 'darkBackground'
   | 'darkMode'
   | 'lastQuoteDate'
-  | 'currentQuoteId'
-  | 'xaiApiKey';
+  | 'currentQuoteId';
 
 export async function getSetting(key: SettingKey): Promise<string | null> {
   const db = await getDatabase();
@@ -54,16 +53,4 @@ export async function getLastQuoteDate(): Promise<string | null> {
 
 export async function setLastQuoteDate(date: string): Promise<void> {
   await setSetting('lastQuoteDate', date);
-}
-
-export async function getXaiApiKey(): Promise<string | null> {
-  return getSetting('xaiApiKey');
-}
-
-export async function setXaiApiKey(key: string | null): Promise<void> {
-  if (key) {
-    await setSetting('xaiApiKey', key);
-  } else {
-    await deleteSetting('xaiApiKey');
-  }
 }

@@ -1,4 +1,8 @@
+import Constants from 'expo-constants';
 import { getXaiApiKey } from './secureStorage';
+
+// If set, uses the worker for API calls (for testing). Otherwise calls XAI directly.
+const WORKER_URL = Constants.expoConfig?.extra?.workerUrl as string | undefined;
 
 export interface ParsedQuote {
   text: string;
@@ -25,6 +29,25 @@ For each quote, identify:
 
 Return ONLY valid JSON in this exact format, no other text:
 {"quotes": [{"text": "quote text here", "author": "Author Name" or null, "categories": ["Category1", "Category2"] or []}]}`;
+}
+
+function normalizeQuotes(quotes: ParsedQuote[], categoryNames: string[]): ParsedQuote[] {
+  const categoryMap = new Map<string, string>();
+  for (const cat of categoryNames) {
+    categoryMap.set(cat.toLowerCase(), cat);
+  }
+
+  return quotes
+    .map((quote) => ({
+      text: String(quote.text || '').trim(),
+      author: quote.author ? String(quote.author).trim() : null,
+      categories: Array.isArray(quote.categories)
+        ? quote.categories
+            .map((cat: string) => categoryMap.get(cat.toLowerCase()))
+            .filter((cat): cat is string => cat !== undefined)
+        : [],
+    }))
+    .filter((quote) => quote.text.length > 0);
 }
 
 function extractJSON(text: string): string {
@@ -56,6 +79,8 @@ function extractJSON(text: string): string {
 }
 
 export async function hasApiKey(): Promise<boolean> {
+  // Worker URL is set - no API key needed
+  if (WORKER_URL) return true;
   const key = await getXaiApiKey();
   return !!key;
 }
@@ -64,6 +89,29 @@ export async function parseQuotesFromText(
   text: string,
   categoryNames: string[]
 ): Promise<ParsedQuote[]> {
+  if (WORKER_URL) {
+    // Use worker for testing (no API key required)
+    const response = await fetch(WORKER_URL, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ text, categories: categoryNames }),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json().catch(() => ({}));
+      throw new Error(
+        (errorData as { error?: string }).error || `Worker error: ${response.status}`
+      );
+    }
+
+    const data = (await response.json()) as ParseResponse;
+    if (!Array.isArray(data.quotes)) {
+      throw new Error('Invalid response from worker');
+    }
+    return normalizeQuotes(data.quotes, categoryNames);
+  }
+
+  // Direct XAI API call (production)
   const apiKey = await getXaiApiKey();
 
   if (!apiKey) {
@@ -123,21 +171,5 @@ export async function parseQuotesFromText(
     throw new Error('Invalid response structure: quotes is not an array');
   }
 
-  // Validate each quote and ensure categories match (case-insensitive)
-  const categoryMap = new Map<string, string>();
-  for (const cat of categoryNames) {
-    categoryMap.set(cat.toLowerCase(), cat);
-  }
-
-  return parsed.quotes
-    .map((quote) => ({
-      text: String(quote.text || '').trim(),
-      author: quote.author ? String(quote.author).trim() : null,
-      categories: Array.isArray(quote.categories)
-        ? quote.categories
-            .map((cat: string) => categoryMap.get(cat.toLowerCase()))
-            .filter((cat): cat is string => cat !== undefined)
-        : [],
-    }))
-    .filter((quote) => quote.text.length > 0);
+  return normalizeQuotes(parsed.quotes, categoryNames);
 }

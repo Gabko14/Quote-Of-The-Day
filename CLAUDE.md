@@ -46,6 +46,7 @@ gh pr create, gh issue list, etc.
 - **Never push directly to `master`** - Always create a feature branch
 - **New task = new branch** - Create a fresh branch from master for each task
 - **Clean up after merge** - Delete the branch locally and remotely after PR is merged
+- **Force push on feature branches** - When fixing mistakes on a PR branch, amend and force push instead of creating fixup commits
 - Create PRs using GitHub CLI: `gh pr create`
 - Branch naming: `feature/description` or `fix/description`
 
@@ -84,7 +85,7 @@ app/
 - **backgroundTask.ts** - Expo background task that rotates quotes and sets wallpaper from cache
 - **wallpaperService.ts** - Bridge to native Android WallpaperModule
 - **wallpaperCache.ts** - Pre-generated wallpaper image cache per quote
-- **bulkImport.ts** - API client for Cloudflare Worker (quote parsing)
+- **bulkImport.ts** - Quote parsing via XAI API (direct) or worker (if configured)
 
 ### Data Layer (`src/db/`)
 - **database.ts** - SQLite singleton with migrations (quotes, categories, settings tables)
@@ -96,9 +97,10 @@ app/
 - Native `WallpaperModule` (Kotlin) sets the image as Android wallpaper
 
 ### Cloudflare Worker (`worker/`)
-- Parses bulk quote text using XAI (Grok) API
-- Matches quotes to existing categories
-- Deployed at: `https://quote-parser.gabkolistiak.workers.dev`
+- Optional proxy for bulk quote parsing (for development/testing)
+- In production, the app calls XAI directly using user's API key
+- To use worker: set `WORKER_URL` in `.env` (see `.env.example`)
+- Without WORKER_URL: app calls XAI directly (production default)
 - Worker commands: `cd worker && npm run dev` (local), `npm run deploy` (production)
 - XAI API key stored as Cloudflare secret, not in code
 
@@ -131,6 +133,7 @@ const quotes = await db.getAllAsync<Quote>('SELECT * FROM quotes');
 ```bash
 npx tsc --noEmit
 npm run lint
+npm test
 npx expo export
 ```
 

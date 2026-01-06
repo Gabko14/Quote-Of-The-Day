@@ -1,4 +1,4 @@
-import { getXaiApiKey } from '../db';
+import { getXaiApiKey } from './secureStorage';
 
 export interface ParsedQuote {
   text: string;

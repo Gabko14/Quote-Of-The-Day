@@ -14,9 +14,11 @@ import { Ionicons } from '@expo/vector-icons';
 import {
   getDarkBackground,
   setDarkBackground as saveDarkBackground,
+} from '../src/db';
+import {
   getXaiApiKey,
   setXaiApiKey as saveXaiApiKey,
-} from '../src/db';
+} from '../src/services/secureStorage';
 import { useTheme } from '../src/theme/ThemeContext';
 import { invalidateCache } from '../src/services/wallpaperCache';
 
@@ -55,7 +57,7 @@ export default function SettingsScreen() {
     setDarkMode(value);
   };
 
-  // Debounce API key saves to avoid writing to SQLite on every keystroke
+  // Debounce API key saves to avoid writing to secure storage on every keystroke
   const apiKeyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   useEffect(() => {
@@ -239,7 +241,7 @@ export default function SettingsScreen() {
           </Pressable>
         </View>
         <Text style={styles.apiKeyHint}>
-          Your key is stored locally and sent directly to XAI. It never passes through our servers.
+          Your key is stored securely on your device and sent directly to XAI. It never passes through our servers.
         </Text>
         <Pressable style={styles.linkButton} onPress={handleOpenXaiSignup}>
           <Text style={styles.linkText}>Get a free API key at x.ai/api</Text>

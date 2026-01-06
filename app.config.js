@@ -3,7 +3,7 @@ import "dotenv/config";
 
 export default {
   expo: {
-    name: "Quote of the day",
+    name: "Quote of the Day - Daily Wallpaper Quotes",
     slug: "quote-of-the-day",
     version: "1.0.0",
     orientation: "portrait",

@@ -1,5 +1,74 @@
 interface Env {
   XAI_API_KEY: string;
+  RATE_LIMIT: KVNamespace;
+}
+
+// Rate limiting configuration
+const RATE_LIMIT_MAX_REQUESTS = 10; // Max requests per window
+const RATE_LIMIT_WINDOW_SECONDS = 60; // Window duration in seconds
+
+interface RateLimitData {
+  count: number;
+  resetAt: number;
+}
+
+function getClientIP(request: Request): string {
+  // CF-Connecting-IP is the real client IP when behind Cloudflare
+  return request.headers.get('CF-Connecting-IP') ||
+    request.headers.get('X-Forwarded-For')?.split(',')[0]?.trim() ||
+    'unknown';
+}
+
+async function checkRateLimit(
+  kv: KVNamespace,
+  clientIP: string
+): Promise<{ allowed: boolean; remaining: number; resetAt: number }> {
+  const key = `rate_limit:${clientIP}`;
+  const now = Date.now();
+
+  // Get current rate limit data
+  const data = await kv.get<RateLimitData>(key, 'json');
+
+  if (!data || now > data.resetAt) {
+    // No data or window expired, start a new window
+    const newData: RateLimitData = {
+      count: 1,
+      resetAt: now + RATE_LIMIT_WINDOW_SECONDS * 1000,
+    };
+    await kv.put(key, JSON.stringify(newData), {
+      expirationTtl: RATE_LIMIT_WINDOW_SECONDS + 10, // Add buffer for TTL
+    });
+    return {
+      allowed: true,
+      remaining: RATE_LIMIT_MAX_REQUESTS - 1,
+      resetAt: newData.resetAt,
+    };
+  }
+
+  if (data.count >= RATE_LIMIT_MAX_REQUESTS) {
+    // Rate limit exceeded
+    return {
+      allowed: false,
+      remaining: 0,
+      resetAt: data.resetAt,
+    };
+  }
+
+  // Increment count
+  const updatedData: RateLimitData = {
+    count: data.count + 1,
+    resetAt: data.resetAt,
+  };
+  const ttlSeconds = Math.ceil((data.resetAt - now) / 1000) + 10;
+  await kv.put(key, JSON.stringify(updatedData), {
+    expirationTtl: ttlSeconds > 0 ? ttlSeconds : RATE_LIMIT_WINDOW_SECONDS,
+  });
+
+  return {
+    allowed: true,
+    remaining: RATE_LIMIT_MAX_REQUESTS - updatedData.count,
+    resetAt: data.resetAt,
+  };
 }
 
 interface ParseRequest {
@@ -183,13 +252,43 @@ export default {
       );
     }
 
+    // Check rate limit
+    const clientIP = getClientIP(request);
+    const rateLimit = await checkRateLimit(env.RATE_LIMIT, clientIP);
+
+    // Add rate limit headers to all responses
+    const rateLimitHeaders = {
+      'X-RateLimit-Limit': RATE_LIMIT_MAX_REQUESTS.toString(),
+      'X-RateLimit-Remaining': rateLimit.remaining.toString(),
+      'X-RateLimit-Reset': Math.ceil(rateLimit.resetAt / 1000).toString(),
+    };
+
+    if (!rateLimit.allowed) {
+      const retryAfter = Math.ceil((rateLimit.resetAt - Date.now()) / 1000);
+      return new Response(
+        JSON.stringify({
+          error: 'Rate limit exceeded. Please try again later.',
+          retryAfter,
+        }),
+        {
+          status: 429,
+          headers: {
+            ...corsHeaders,
+            ...rateLimitHeaders,
+            'Content-Type': 'application/json',
+            'Retry-After': retryAfter.toString(),
+          },
+        }
+      );
+    }
+
     try {
       const body = await request.json() as ParseRequest;
 
       if (!body.text || typeof body.text !== 'string') {
         return new Response(
           JSON.stringify({ error: 'Missing or invalid "text" field' }),
-          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+          { status: 400, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
         );
       }
 
@@ -199,7 +298,7 @@ export default {
 
       return new Response(
         JSON.stringify({ quotes }),
-        { headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     } catch (error) {
       console.error('Error parsing quotes:', error);
@@ -207,7 +306,7 @@ export default {
       const message = error instanceof Error ? error.message : 'Unknown error';
       return new Response(
         JSON.stringify({ error: message }),
-        { status: 500, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        { status: 500, headers: { ...corsHeaders, ...rateLimitHeaders, 'Content-Type': 'application/json' } }
       );
     }
   },

@@ -1,5 +1,15 @@
 {
   "name": "quote-parser",
   "main": "src/index.ts",
-  "compatibility_date": "2024-12-01"
+  "compatibility_date": "2024-12-01",
+  // KV namespace for rate limiting - create with: wrangler kv namespace create RATE_LIMIT
+  // For local dev: wrangler kv namespace create RATE_LIMIT --preview
+  "kv_namespaces": [
+    {
+      "binding": "RATE_LIMIT",
+      // Replace with actual namespace ID after creation
+      // Run: wrangler kv namespace create RATE_LIMIT
+      "id": "REPLACE_WITH_NAMESPACE_ID"
+    }
+  ]
 }

@@ -1,4 +1,7 @@
-const WORKER_URL = 'https://quote-parser.gabkolistiak.workers.dev';
+import Constants from 'expo-constants';
+
+const DEFAULT_WORKER_URL = 'https://quote-parser.gabkolistiak.workers.dev';
+const WORKER_URL = Constants.expoConfig?.extra?.workerUrl || DEFAULT_WORKER_URL;
 
 export interface ParsedQuote {
   text: string;

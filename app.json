@@ -32,6 +32,9 @@
       "expo-router",
       "expo-background-task",
       "./plugins/withWallpaperModule"
-    ]
+    ],
+    "extra": {
+      "workerUrl": "https://quote-parser.gabkolistiak.workers.dev"
+    }
   }
 }

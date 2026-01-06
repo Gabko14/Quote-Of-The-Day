@@ -8,7 +8,7 @@ import {
   Pressable,
   Linking,
 } from 'react-native';
-import { useState, useCallback } from 'react';
+import { useState, useCallback, useRef, useEffect } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import {
@@ -55,9 +55,27 @@ export default function SettingsScreen() {
     setDarkMode(value);
   };
 
-  const handleApiKeyChange = async (value: string) => {
+  // Debounce API key saves to avoid writing to SQLite on every keystroke
+  const apiKeyTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+
+  useEffect(() => {
+    return () => {
+      if (apiKeyTimeoutRef.current) {
+        clearTimeout(apiKeyTimeoutRef.current);
+      }
+    };
+  }, []);
+
+  const handleApiKeyChange = (value: string) => {
     setXaiApiKey(value);
-    await saveXaiApiKey(value || null);
+
+    if (apiKeyTimeoutRef.current) {
+      clearTimeout(apiKeyTimeoutRef.current);
+    }
+
+    apiKeyTimeoutRef.current = setTimeout(async () => {
+      await saveXaiApiKey(value || null);
+    }, 500);
   };
 
   const handleOpenXaiSignup = () => {

@@ -11,8 +11,8 @@ import {
   Platform,
   ScrollView,
 } from 'react-native';
-import { useState, useEffect, useRef, useCallback } from 'react';
-import { router, Stack } from 'expo-router';
+import { useState, useRef, useCallback } from 'react';
+import { router, Stack, useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { getAllCategories, Category, createQuote } from '../../src/db';
@@ -37,9 +37,11 @@ export default function ImportScreen() {
   const progressAnim = useRef(new Animated.Value(0)).current;
   const [estimatedTime, setEstimatedTime] = useState(0);
 
-  useEffect(() => {
-    checkApiKeyAndLoadCategories();
-  }, []);
+  useFocusEffect(
+    useCallback(() => {
+      checkApiKeyAndLoadCategories();
+    }, [])
+  );
 
   const checkApiKeyAndLoadCategories = async () => {
     const [hasKey, cats] = await Promise.all([hasApiKey(), getAllCategories()]);
@@ -48,7 +50,7 @@ export default function ImportScreen() {
   };
 
   const handleGoToSettings = () => {
-    router.replace('/settings');
+    router.push('/settings');
   };
 
   const getCategoryIdsByNames = (names: string[], cats: Category[] = categories): number[] => {

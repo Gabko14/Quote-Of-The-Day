@@ -135,6 +135,25 @@ export default function SettingsScreen() {
       color: colors.textMuted,
       marginTop: 4,
     },
+    apiKeyHeader: {
+      flexDirection: 'row',
+      justifyContent: 'space-between',
+      alignItems: 'center',
+      marginBottom: 12,
+    },
+    apiKeyTitleRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 8,
+    },
+    apiKeyStatus: {
+      fontSize: 12,
+      color: colors.textMuted,
+      fontWeight: '500',
+    },
+    apiKeyStatusActive: {
+      color: '#22c55e',
+    },
     apiKeyInputContainer: {
       flexDirection: 'row',
       alignItems: 'center',
@@ -142,24 +161,29 @@ export default function SettingsScreen() {
       borderRadius: 8,
       borderWidth: 1,
       borderColor: colors.border,
-      marginTop: 8,
     },
     apiKeyInput: {
       flex: 1,
       fontSize: 14,
       color: colors.text,
       paddingHorizontal: 12,
-      paddingVertical: 10,
+      paddingVertical: 12,
+      fontFamily: 'monospace',
     },
     apiKeyToggle: {
       padding: 10,
     },
-    linkButton: {
+    getKeyButton: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      gap: 6,
       marginTop: 12,
+      paddingVertical: 8,
     },
-    linkText: {
+    getKeyButtonText: {
       fontSize: 14,
       color: colors.primary,
+      fontWeight: '500',
     },
     apiKeyHint: {
       fontSize: 12,
@@ -217,35 +241,56 @@ export default function SettingsScreen() {
 
       <View style={styles.section}>
         <Text style={styles.sectionTitle}>AI Import</Text>
-        <View>
-          <Text style={styles.rowTitle}>XAI API Key</Text>
-          <Text style={styles.rowSubtitle}>Required for bulk quote import</Text>
+
+        <View style={styles.apiKeyHeader}>
+          <View style={styles.apiKeyTitleRow}>
+            <Ionicons
+              name={xaiApiKey ? 'checkmark-circle' : 'key-outline'}
+              size={20}
+              color={xaiApiKey ? '#22c55e' : colors.textMuted}
+            />
+            <Text style={styles.rowTitle}>XAI API Key</Text>
+          </View>
+          <Text style={[styles.apiKeyStatus, xaiApiKey ? styles.apiKeyStatusActive : null]}>
+            {xaiApiKey ? 'Configured' : 'Not set'}
+          </Text>
         </View>
+
         <View style={styles.apiKeyInputContainer}>
           <TextInput
             style={styles.apiKeyInput}
             value={xaiApiKey}
             onChangeText={handleApiKeyChange}
-            placeholder="Enter your XAI API key"
+            placeholder="xai-xxxxxxxxxxxxxxxx"
             placeholderTextColor={colors.textMuted}
             secureTextEntry={!showApiKey}
             autoCapitalize="none"
             autoCorrect={false}
           />
-          <Pressable style={styles.apiKeyToggle} onPress={() => setShowApiKey(!showApiKey)}>
-            <Ionicons
-              name={showApiKey ? 'eye-off-outline' : 'eye-outline'}
-              size={20}
-              color={colors.textMuted}
-            />
-          </Pressable>
+          {xaiApiKey ? (
+            <Pressable style={styles.apiKeyToggle} onPress={() => setShowApiKey(!showApiKey)}>
+              <Ionicons
+                name={showApiKey ? 'eye-off-outline' : 'eye-outline'}
+                size={20}
+                color={colors.textMuted}
+              />
+            </Pressable>
+          ) : null}
+          {xaiApiKey ? (
+            <Pressable style={styles.apiKeyToggle} onPress={() => handleApiKeyChange('')}>
+              <Ionicons name="close-circle-outline" size={20} color={colors.textMuted} />
+            </Pressable>
+          ) : null}
         </View>
-        <Text style={styles.apiKeyHint}>
-          Your key is stored securely on your device and sent directly to XAI. It never passes through our servers.
-        </Text>
-        <Pressable style={styles.linkButton} onPress={handleOpenXaiSignup}>
-          <Text style={styles.linkText}>Get a free API key at x.ai/api</Text>
+
+        <Pressable style={styles.getKeyButton} onPress={handleOpenXaiSignup}>
+          <Ionicons name="open-outline" size={16} color={colors.primary} />
+          <Text style={styles.getKeyButtonText}>Get a free API key at x.ai</Text>
         </Pressable>
+
+        <Text style={styles.apiKeyHint}>
+          Your key is stored securely on device and sent directly to XAI.
+        </Text>
       </View>
 
       <View style={styles.section}>

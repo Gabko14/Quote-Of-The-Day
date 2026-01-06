@@ -89,4 +89,4 @@ jobs:
                - Commit and push your changes
                - Create a PR using `gh pr create` linking to the issue
 
-            Refer to CLAUDE.md for project-specific guidance.
+            Before creating or updating a PR, always run type checking, linting, tests, and build to ensure the code is valid.

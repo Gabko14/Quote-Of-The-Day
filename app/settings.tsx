@@ -1,20 +1,38 @@
-import { View, Text, StyleSheet, Switch, ActivityIndicator } from 'react-native';
+import {
+  View,
+  Text,
+  StyleSheet,
+  Switch,
+  ActivityIndicator,
+  TextInput,
+  Pressable,
+  Linking,
+} from 'react-native';
 import { useState, useCallback } from 'react';
 import { useFocusEffect } from 'expo-router';
-import { getDarkBackground, setDarkBackground as saveDarkBackground } from '../src/db';
+import { Ionicons } from '@expo/vector-icons';
+import {
+  getDarkBackground,
+  setDarkBackground as saveDarkBackground,
+  getXaiApiKey,
+  setXaiApiKey as saveXaiApiKey,
+} from '../src/db';
 import { useTheme } from '../src/theme/ThemeContext';
 import { invalidateCache } from '../src/services/wallpaperCache';
 
 export default function SettingsScreen() {
   const { colors, isDark, setDarkMode } = useTheme();
   const [darkBackground, setDarkBackground] = useState(true);
+  const [xaiApiKey, setXaiApiKey] = useState('');
+  const [showApiKey, setShowApiKey] = useState(false);
   const [loading, setLoading] = useState(true);
 
   const loadSettings = useCallback(async () => {
     setLoading(true);
     try {
-      const dark = await getDarkBackground();
+      const [dark, apiKey] = await Promise.all([getDarkBackground(), getXaiApiKey()]);
       setDarkBackground(dark);
+      setXaiApiKey(apiKey ?? '');
     } finally {
       setLoading(false);
     }
@@ -35,6 +53,15 @@ export default function SettingsScreen() {
 
   const handleDarkModeToggle = (value: boolean) => {
     setDarkMode(value);
+  };
+
+  const handleApiKeyChange = async (value: string) => {
+    setXaiApiKey(value);
+    await saveXaiApiKey(value || null);
+  };
+
+  const handleOpenXaiSignup = () => {
+    Linking.openURL('https://x.ai/api');
   };
 
   const styles = StyleSheet.create({
@@ -88,6 +115,38 @@ export default function SettingsScreen() {
       color: colors.textMuted,
       marginTop: 4,
     },
+    apiKeyInputContainer: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      backgroundColor: colors.background,
+      borderRadius: 8,
+      borderWidth: 1,
+      borderColor: colors.border,
+      marginTop: 8,
+    },
+    apiKeyInput: {
+      flex: 1,
+      fontSize: 14,
+      color: colors.text,
+      paddingHorizontal: 12,
+      paddingVertical: 10,
+    },
+    apiKeyToggle: {
+      padding: 10,
+    },
+    linkButton: {
+      marginTop: 12,
+    },
+    linkText: {
+      fontSize: 14,
+      color: colors.primary,
+    },
+    apiKeyHint: {
+      fontSize: 12,
+      color: colors.textMuted,
+      marginTop: 8,
+      lineHeight: 18,
+    },
   });
 
   if (loading) {
@@ -134,6 +193,39 @@ export default function SettingsScreen() {
             trackColor={{ false: colors.border, true: colors.primary }}
           />
         </View>
+      </View>
+
+      <View style={styles.section}>
+        <Text style={styles.sectionTitle}>AI Import</Text>
+        <View>
+          <Text style={styles.rowTitle}>XAI API Key</Text>
+          <Text style={styles.rowSubtitle}>Required for bulk quote import</Text>
+        </View>
+        <View style={styles.apiKeyInputContainer}>
+          <TextInput
+            style={styles.apiKeyInput}
+            value={xaiApiKey}
+            onChangeText={handleApiKeyChange}
+            placeholder="Enter your XAI API key"
+            placeholderTextColor={colors.textMuted}
+            secureTextEntry={!showApiKey}
+            autoCapitalize="none"
+            autoCorrect={false}
+          />
+          <Pressable style={styles.apiKeyToggle} onPress={() => setShowApiKey(!showApiKey)}>
+            <Ionicons
+              name={showApiKey ? 'eye-off-outline' : 'eye-outline'}
+              size={20}
+              color={colors.textMuted}
+            />
+          </Pressable>
+        </View>
+        <Text style={styles.apiKeyHint}>
+          Your key is stored locally and sent directly to XAI. It never passes through our servers.
+        </Text>
+        <Pressable style={styles.linkButton} onPress={handleOpenXaiSignup}>
+          <Text style={styles.linkText}>Get a free API key at x.ai/api</Text>
+        </Pressable>
       </View>
 
       <View style={styles.section}>

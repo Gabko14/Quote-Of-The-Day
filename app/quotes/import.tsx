@@ -16,9 +16,9 @@ import { router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { getAllCategories, Category, createQuote } from '../../src/db';
-import { parseQuotesFromText, ParsedQuote } from '../../src/services/bulkImport';
+import { parseQuotesFromText, ParsedQuote, hasApiKey } from '../../src/services/bulkImport';
 
-type Phase = 'input' | 'loading' | 'preview';
+type Phase = 'checking' | 'no-key' | 'input' | 'loading' | 'preview';
 
 interface EditableQuote extends ParsedQuote {
   id: string;
@@ -27,7 +27,7 @@ interface EditableQuote extends ParsedQuote {
 
 export default function ImportScreen() {
   const { colors } = useTheme();
-  const [phase, setPhase] = useState<Phase>('input');
+  const [phase, setPhase] = useState<Phase>('checking');
   const [inputText, setInputText] = useState('');
   const [categories, setCategories] = useState<Category[]>([]);
   const [quotes, setQuotes] = useState<EditableQuote[]>([]);
@@ -38,12 +38,17 @@ export default function ImportScreen() {
   const [estimatedTime, setEstimatedTime] = useState(0);
 
   useEffect(() => {
-    loadCategories();
+    checkApiKeyAndLoadCategories();
   }, []);
 
-  const loadCategories = async () => {
-    const cats = await getAllCategories();
+  const checkApiKeyAndLoadCategories = async () => {
+    const [hasKey, cats] = await Promise.all([hasApiKey(), getAllCategories()]);
     setCategories(cats);
+    setPhase(hasKey ? 'input' : 'no-key');
+  };
+
+  const handleGoToSettings = () => {
+    router.replace('/settings');
   };
 
   const getCategoryIdsByNames = (names: string[], cats: Category[] = categories): number[] => {
@@ -363,6 +368,40 @@ export default function ImportScreen() {
       fontSize: 16,
       fontWeight: '600',
     },
+    noKeyContainer: {
+      flex: 1,
+      justifyContent: 'center',
+      alignItems: 'center',
+      padding: 32,
+    },
+    noKeyIcon: {
+      marginBottom: 24,
+    },
+    noKeyTitle: {
+      fontSize: 20,
+      fontWeight: '600',
+      color: colors.text,
+      marginBottom: 12,
+      textAlign: 'center',
+    },
+    noKeyDescription: {
+      fontSize: 15,
+      color: colors.textSecondary,
+      textAlign: 'center',
+      lineHeight: 22,
+      marginBottom: 24,
+    },
+    settingsButton: {
+      backgroundColor: colors.primary,
+      borderRadius: 12,
+      paddingVertical: 14,
+      paddingHorizontal: 32,
+    },
+    settingsButtonText: {
+      color: '#fff',
+      fontSize: 16,
+      fontWeight: '600',
+    },
   });
 
   const renderQuoteItem = useCallback(
@@ -460,6 +499,31 @@ export default function ImportScreen() {
         style={styles.container}
         behavior={Platform.OS === 'ios' ? 'padding' : undefined}
       >
+        {phase === 'checking' && (
+          <View style={styles.loadingContainer}>
+            <Text style={styles.loadingText}>Loading...</Text>
+          </View>
+        )}
+
+        {phase === 'no-key' && (
+          <View style={styles.noKeyContainer}>
+            <Ionicons
+              name="key-outline"
+              size={64}
+              color={colors.textMuted}
+              style={styles.noKeyIcon}
+            />
+            <Text style={styles.noKeyTitle}>API Key Required</Text>
+            <Text style={styles.noKeyDescription}>
+              To use AI-powered quote import, you need to add your XAI API key in Settings. XAI
+              offers a free tier, so you can get started at no cost.
+            </Text>
+            <Pressable style={styles.settingsButton} onPress={handleGoToSettings}>
+              <Text style={styles.settingsButtonText}>Go to Settings</Text>
+            </Pressable>
+          </View>
+        )}
+
         {phase === 'input' && (
           <View style={styles.content}>
             <Text style={styles.inputLabel}>

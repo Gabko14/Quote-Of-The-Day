@@ -5,6 +5,7 @@ interface Env {
 interface ParseRequest {
   text: string;
   categories: string[];
+  apiKey?: string;
 }
 
 interface ParsedQuote {
@@ -195,7 +196,17 @@ export default {
 
       const categories = Array.isArray(body.categories) ? body.categories : [];
 
-      const quotes = await parseQuotesWithXAI(body.text, categories, env.XAI_API_KEY);
+      // Use provided API key, or fall back to environment secret
+      const apiKeyToUse = body.apiKey || env.XAI_API_KEY;
+
+      if (!apiKeyToUse) {
+        return new Response(
+          JSON.stringify({ error: 'No API key provided. Please add your XAI API key in Settings.' }),
+          { status: 400, headers: { ...corsHeaders, 'Content-Type': 'application/json' } }
+        );
+      }
+
+      const quotes = await parseQuotesWithXAI(body.text, categories, apiKeyToUse);
 
       return new Response(
         JSON.stringify({ quotes }),

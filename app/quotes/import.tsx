@@ -15,7 +15,7 @@ import { useState, useEffect, useRef, useCallback } from 'react';
 import { router, Stack } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/ThemeContext';
-import { getAllCategories, Category, createQuote } from '../../src/db';
+import { getAllCategories, Category, createQuote, getXaiApiKey } from '../../src/db';
 import { parseQuotesFromText, ParsedQuote } from '../../src/services/bulkImport';
 
 type Phase = 'input' | 'loading' | 'preview';
@@ -67,6 +67,20 @@ export default function ImportScreen() {
       return;
     }
 
+    // Check for API key
+    const apiKey = await getXaiApiKey();
+    if (!apiKey) {
+      Alert.alert(
+        'API Key Required',
+        'Please add your XAI API key in Settings to use AI-powered import.',
+        [
+          { text: 'Cancel', style: 'cancel' },
+          { text: 'Go to Settings', onPress: () => router.push('/settings') },
+        ]
+      );
+      return;
+    }
+
     const wordCount = countWords(inputText);
     const duration = calculateDuration(wordCount);
     setEstimatedTime(Math.ceil(duration / 1000));
@@ -86,7 +100,7 @@ export default function ImportScreen() {
       setCategories(latestCategories);
 
       const categoryNames = latestCategories.map((c) => c.name);
-      const parsed = await parseQuotesFromText(inputText, categoryNames);
+      const parsed = await parseQuotesFromText(inputText, categoryNames, apiKey);
 
       Animated.timing(progressAnim, {
         toValue: 1,

@@ -32,4 +32,7 @@ export {
   setCurrentQuoteId,
   getLastQuoteDate,
   setLastQuoteDate,
+  getXaiApiKey,
+  setXaiApiKey,
+  deleteXaiApiKey,
 } from './settings';

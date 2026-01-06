@@ -13,7 +13,8 @@ interface ParseResponse {
 
 export async function parseQuotesFromText(
   text: string,
-  categoryNames: string[]
+  categoryNames: string[],
+  apiKey?: string
 ): Promise<ParsedQuote[]> {
   const response = await fetch(WORKER_URL, {
     method: 'POST',
@@ -23,6 +24,7 @@ export async function parseQuotesFromText(
     body: JSON.stringify({
       text,
       categories: categoryNames,
+      apiKey,
     }),
   });
 

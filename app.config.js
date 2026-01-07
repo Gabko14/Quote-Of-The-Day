@@ -35,6 +35,15 @@ export default {
       "expo-router",
       "expo-background-task",
       "./plugins/withWallpaperModule",
+      [
+        "expo-build-properties",
+        {
+          android: {
+            enableMinifyInReleaseBuilds: true,
+            enableShrinkResourcesInReleaseBuilds: true,
+          },
+        },
+      ],
     ],
     extra: {
       // Set WORKER_URL in .env to enable worker mode for testing

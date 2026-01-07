@@ -14,6 +14,7 @@ export interface QuoteInput {
   author?: string | null;
   category_id?: number | null; // Legacy, kept for compatibility
   category_ids?: number[]; // New: multiple categories
+  created_at?: string; // ISO timestamp, used for bulk import to preserve order
 }
 
 interface QuoteRow {
@@ -109,10 +110,16 @@ export async function createQuote(input: QuoteInput): Promise<number> {
   const categoryIds = input.category_ids ?? (input.category_id ? [input.category_id] : []);
   const legacyCategoryId = categoryIds[0] ?? null;
 
-  const result = await db.runAsync(
-    'INSERT INTO quotes (text, author, category_id) VALUES (?, ?, ?)',
-    [input.text, input.author ?? null, legacyCategoryId]
-  );
+  // Use provided created_at or let SQLite use CURRENT_TIMESTAMP default
+  const result = input.created_at
+    ? await db.runAsync(
+        'INSERT INTO quotes (text, author, category_id, created_at) VALUES (?, ?, ?, ?)',
+        [input.text, input.author ?? null, legacyCategoryId, input.created_at]
+      )
+    : await db.runAsync(
+        'INSERT INTO quotes (text, author, category_id) VALUES (?, ?, ?)',
+        [input.text, input.author ?? null, legacyCategoryId]
+      );
 
   const quoteId = result.lastInsertRowId;
 

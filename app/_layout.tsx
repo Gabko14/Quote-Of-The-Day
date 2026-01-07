@@ -4,6 +4,7 @@ import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
+import { logger } from '../src/utils/logger';
 
 // Ignore the linking warning caused by React 19 StrictMode double-mounting
 // This is a known issue with expo-router and React 19's development mode behavior
@@ -14,7 +15,7 @@ function TabsLayout() {
   const { colors } = useTheme();
 
   useEffect(() => {
-    registerBackgroundTask().catch(console.error);
+    registerBackgroundTask().catch(logger.error);
   }, []);
 
   return (

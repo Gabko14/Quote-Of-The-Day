@@ -1,4 +1,5 @@
 import { Platform, NativeModules } from 'react-native';
+import { logger } from '../utils/logger';
 
 const { WallpaperModule } = NativeModules;
 
@@ -26,7 +27,7 @@ export async function setWallpaper(imagePath: string, target: WallpaperTarget = 
     await WallpaperModule.setWallpaper(imagePath, target);
     return { success: true };
   } catch (error: any) {
-    console.error('Error setting wallpaper:', error);
+    logger.error('Error setting wallpaper:', error);
     return { success: false, error: error.message || 'Failed to set wallpaper' };
   }
 }

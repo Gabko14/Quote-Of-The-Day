@@ -10,6 +10,7 @@ import { useTheme } from '../src/theme/ThemeContext';
 import { getCachedWallpaperPath, getQuotesWithoutCache } from '../src/services/wallpaperCache';
 import { getBackgroundTaskStatus } from '../src/services/backgroundTask';
 import { WallpaperGenerator, WallpaperGeneratorHandle } from '../src/components/WallpaperGenerator';
+import { logger } from '../src/utils/logger';
 
 export default function HomeScreen() {
   const { colors, isDark } = useTheme();
@@ -32,12 +33,12 @@ export default function HomeScreen() {
       const quotesWithoutCache = await getQuotesWithoutCache(isDarkBg);
 
       if (quotesWithoutCache.length > 0) {
-        console.log(`[WallpaperCache] Generating ${quotesWithoutCache.length} missing wallpapers...`);
+        logger.log(`[WallpaperCache] Generating ${quotesWithoutCache.length} missing wallpapers...`);
         const count = await generatorRef.current.generateAll(quotesWithoutCache, isDarkBg);
-        console.log(`[WallpaperCache] Generated ${count} wallpapers`);
+        logger.log(`[WallpaperCache] Generated ${count} wallpapers`);
       }
     } catch (error) {
-      console.error('[WallpaperCache] Error generating wallpapers:', error);
+      logger.error('[WallpaperCache] Error generating wallpapers:', error);
     } finally {
       isGeneratingRef.current = false;
     }
@@ -112,7 +113,7 @@ export default function HomeScreen() {
         Alert.alert('Error', result.error || 'Failed to set wallpaper');
       }
     } catch (error) {
-      console.error('Error setting wallpaper:', error);
+      logger.error('Error setting wallpaper:', error);
       Alert.alert('Error', 'Failed to set wallpaper');
     } finally {
       setSettingWallpaper(false);

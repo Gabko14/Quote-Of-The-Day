@@ -3,6 +3,7 @@ import { View, Text, StyleSheet, Dimensions } from 'react-native';
 import { captureRef } from 'react-native-view-shot';
 import { Quote } from '../db';
 import { cacheWallpaper } from '../services/wallpaperCache';
+import { logger } from '../utils/logger';
 
 export interface WallpaperGeneratorHandle {
   generateForQuote: (quote: Quote, isDark: boolean) => Promise<string | null>;
@@ -44,7 +45,7 @@ export const WallpaperGenerator = forwardRef<WallpaperGeneratorHandle, {}>(
         const cachedPath = cacheWallpaper(quote.id, isDark, uri);
         return cachedPath;
       } catch (error) {
-        console.error('Error generating wallpaper for quote:', quote.id, error);
+        logger.error('Error generating wallpaper for quote:', quote.id, error);
         return null;
       }
     }, [captureWidth, captureHeight]);
@@ -56,7 +57,7 @@ export const WallpaperGenerator = forwardRef<WallpaperGeneratorHandle, {}>(
         const result = await generateForQuote(quote, isDark);
         if (result) {
           successCount++;
-          console.log(`[WallpaperGenerator] Cached quote ${quote.id}`);
+          logger.log(`[WallpaperGenerator] Cached quote ${quote.id}`);
         }
       }
 

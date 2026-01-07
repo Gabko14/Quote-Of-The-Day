@@ -1,5 +1,6 @@
 import { File, Directory, Paths } from 'expo-file-system';
 import { getDatabase, Quote } from '../db';
+import { logger } from '../utils/logger';
 
 function getWallpaperDir(): Directory {
   return new Directory(Paths.document, 'wallpapers');
@@ -47,7 +48,7 @@ export function cacheWallpaper(quoteId: number, isDark: boolean, sourcePath: str
 
     return null;
   } catch (error) {
-    console.error('Error caching wallpaper:', error);
+    logger.error('Error caching wallpaper:', error);
     return null;
   }
 }

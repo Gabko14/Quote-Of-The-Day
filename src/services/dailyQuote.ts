@@ -9,6 +9,7 @@ import {
   getQuoteCount,
   Quote,
 } from '../db';
+import { logger } from '../utils/logger';
 
 function getTodayDateString(): string {
   const now = new Date();
@@ -77,7 +78,7 @@ export async function rotateDailyQuoteInBackground(): Promise<Quote | null> {
   try {
     return await getDailyQuote();
   } catch (error) {
-    console.error('Error rotating daily quote:', error);
+    logger.error('Error rotating daily quote:', error);
     return null;
   }
 }

@@ -17,6 +17,7 @@ import { Ionicons } from '@expo/vector-icons';
 import { useTheme } from '../../src/theme/ThemeContext';
 import { getAllCategories, Category, createQuote } from '../../src/db';
 import { parseQuotesFromText, ParsedQuote, hasApiKey } from '../../src/services/bulkImport';
+import { logger } from '../../src/utils/logger';
 
 type Phase = 'checking' | 'no-key' | 'input' | 'loading' | 'preview';
 
@@ -116,7 +117,7 @@ export default function ImportScreen() {
       setQuotes(editableQuotes);
       setPhase('preview');
     } catch (error) {
-      console.error('Parse error:', error);
+      logger.error('Parse error:', error);
       Alert.alert('Error', error instanceof Error ? error.message : 'Failed to parse quotes');
       setPhase('input');
     }
@@ -167,7 +168,7 @@ export default function ImportScreen() {
         { text: 'OK', onPress: () => router.back() },
       ]);
     } catch (error) {
-      console.error('Save error:', error);
+      logger.error('Save error:', error);
       Alert.alert('Error', 'Failed to save quotes');
     } finally {
       setSaving(false);

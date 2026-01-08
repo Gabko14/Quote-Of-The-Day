@@ -49,6 +49,10 @@ export async function setCurrentQuoteId(id: number): Promise<void> {
   await setSetting('currentQuoteId', id.toString());
 }
 
+export async function clearCurrentQuoteId(): Promise<void> {
+  await deleteSetting('currentQuoteId');
+}
+
 export async function getLastQuoteDate(): Promise<string | null> {
   return getSetting('lastQuoteDate');
 }

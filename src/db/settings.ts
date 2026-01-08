@@ -40,7 +40,9 @@ export async function setDarkBackground(dark: boolean): Promise<void> {
 
 export async function getCurrentQuoteId(): Promise<number | null> {
   const value = await getSetting('currentQuoteId');
-  return value ? parseInt(value, 10) : null;
+  if (!value) return null;
+  const parsed = parseInt(value, 10);
+  return Number.isNaN(parsed) ? null : parsed;
 }
 
 export async function setCurrentQuoteId(id: number): Promise<void> {

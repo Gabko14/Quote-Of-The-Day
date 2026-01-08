@@ -32,7 +32,7 @@ function parseQuoteRow(row: QuoteRow): Quote {
     author: row.author,
     category_id: row.category_id,
     category_ids: row.category_ids_csv
-      ? row.category_ids_csv.split(',').map(Number)
+      ? row.category_ids_csv.split(',').map(Number).filter((n) => !Number.isNaN(n))
       : [],
     created_at: row.created_at,
   };

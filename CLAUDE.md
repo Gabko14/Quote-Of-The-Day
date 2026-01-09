@@ -128,6 +128,10 @@ const quotes = await db.getAllAsync<Quote>('SELECT * FROM quotes');
 - **Named exports** for components: `export function WallpaperPreview()`
 - **Default exports** only for screens (Expo Router requirement)
 
+## Issue Management (Beads)
+
+**Issues stay open until fully verified** - code written is not enough. Manual testing, setup steps, and user confirmation must all be complete before closing.
+
 ## Before Finishing
 
 ```bash

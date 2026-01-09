@@ -35,6 +35,7 @@ export default {
       "expo-router",
       "expo-background-task",
       "./plugins/withWallpaperModule",
+      "./plugins/withReleaseSigning",
       [
         "expo-build-properties",
         {

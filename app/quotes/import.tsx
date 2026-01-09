@@ -409,13 +409,15 @@ export default function ImportScreen() {
 
   const renderQuoteItem = useCallback(
     ({ item, index }: { item: EditableQuote; index: number }) => (
-      <View style={styles.quoteCard}>
+      <View style={styles.quoteCard} accessibilityLabel={`Quote ${index + 1} of ${quotes.length}`}>
         <View style={styles.quoteHeader}>
           <Text style={styles.quoteNumber}>Quote {index + 1}</Text>
           <Pressable
             style={styles.deleteButton}
             onPress={() => handleDeleteQuote(item.id)}
             hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={`Delete quote ${index + 1}`}
           >
             <Ionicons name="trash-outline" size={20} color={colors.danger} />
           </Pressable>
@@ -429,6 +431,7 @@ export default function ImportScreen() {
           multiline
           placeholder="Quote text"
           placeholderTextColor={colors.textMuted}
+          accessibilityLabel={`Quote ${index + 1} text`}
         />
 
         <Text style={styles.fieldLabel}>AUTHOR</Text>
@@ -438,12 +441,13 @@ export default function ImportScreen() {
           onChangeText={(text) => handleUpdateQuote(item.id, 'author', text || null)}
           placeholder="Optional"
           placeholderTextColor={colors.textMuted}
+          accessibilityLabel={`Quote ${index + 1} author`}
         />
 
         {categories.length > 0 && (
           <>
             <Text style={styles.fieldLabel}>CATEGORIES</Text>
-            <View style={styles.categoriesContainer}>
+            <View style={styles.categoriesContainer} accessibilityLabel="Categories">
               {categories.map((cat) => {
                 const isSelected = item.categoryIds.includes(cat.id);
                 return (
@@ -454,6 +458,9 @@ export default function ImportScreen() {
                       isSelected ? styles.categoryChipSelected : styles.categoryChipUnselected,
                     ]}
                     onPress={() => handleToggleCategory(item.id, cat.id)}
+                    accessibilityRole="checkbox"
+                    accessibilityLabel={cat.name}
+                    accessibilityState={{ checked: isSelected }}
                   >
                     <Text
                       style={[
@@ -471,7 +478,7 @@ export default function ImportScreen() {
         )}
       </View>
     ),
-    [categories, colors]
+    [categories, colors, quotes.length]
   );
 
   const progressWidth = progressAnim.interpolate({
@@ -485,13 +492,23 @@ export default function ImportScreen() {
         options={{
           title: phase === 'preview' ? `${quotes.length} Quotes` : 'Import Quotes',
           headerLeft: () => (
-            <Pressable onPress={() => router.back()} style={{ padding: 8 }}>
+            <Pressable
+              onPress={() => router.back()}
+              style={{ padding: 8 }}
+              accessibilityRole="button"
+              accessibilityLabel="Close"
+            >
               <Ionicons name="close" size={24} color={colors.text} />
             </Pressable>
           ),
           headerRight: () =>
             phase === 'preview' ? (
-              <Pressable onPress={() => setPhase('input')} style={{ padding: 8 }}>
+              <Pressable
+                onPress={() => setPhase('input')}
+                style={{ padding: 8 }}
+                accessibilityRole="button"
+                accessibilityLabel="Edit input text"
+              >
                 <Text style={{ color: colors.primary, fontSize: 15 }}>Edit Input</Text>
               </Pressable>
             ) : null,
@@ -521,7 +538,13 @@ export default function ImportScreen() {
               To use AI-powered quote import, you need to add your XAI API key in Settings. XAI
               offers a free tier, so you can get started at no cost.
             </Text>
-            <Pressable style={styles.settingsButton} onPress={handleGoToSettings}>
+            <Pressable
+              style={styles.settingsButton}
+              onPress={handleGoToSettings}
+              accessibilityRole="button"
+              accessibilityLabel="Go to Settings"
+              accessibilityHint="Configure your XAI API key"
+            >
               <Text style={styles.settingsButtonText}>Go to Settings</Text>
             </Pressable>
           </View>
@@ -545,12 +568,18 @@ export default function ImportScreen() {
                 placeholderTextColor={colors.textMuted}
                 multiline
                 scrollEnabled={false}
+                accessibilityLabel="Paste quotes here"
+                accessibilityHint="Enter quotes in any format for AI to parse"
               />
             </ScrollView>
             <Pressable
               style={[styles.parseButton, !inputText.trim() && styles.parseButtonDisabled]}
               onPress={handleParse}
               disabled={!inputText.trim()}
+              accessibilityRole="button"
+              accessibilityLabel="Parse quotes"
+              accessibilityHint="Use AI to extract quotes from your text"
+              accessibilityState={{ disabled: !inputText.trim() }}
             >
               <Text style={styles.parseButtonText}>Parse Quotes</Text>
             </Pressable>
@@ -581,6 +610,9 @@ export default function ImportScreen() {
                 style={[styles.saveButton, (saving || quotes.length === 0) && styles.saveButtonDisabled]}
                 onPress={handleSaveAll}
                 disabled={saving || quotes.length === 0}
+                accessibilityRole="button"
+                accessibilityLabel={saving ? 'Saving quotes' : `Save ${quotes.length} quote${quotes.length !== 1 ? 's' : ''}`}
+                accessibilityState={{ disabled: saving || quotes.length === 0 }}
               >
                 <Text style={styles.saveButtonText}>
                   {saving ? 'Saving...' : `Save ${quotes.length} Quote${quotes.length !== 1 ? 's' : ''}`}

@@ -142,7 +142,7 @@ export default function QuoteFormScreen() {
     <>
       <Stack.Screen options={{ title: isNew ? 'New Quote' : 'Edit Quote' }} />
       <ScrollView style={styles.container} contentContainerStyle={styles.content}>
-        <Text style={styles.label}>Quote</Text>
+        <Text style={styles.label} nativeID="quoteLabel">Quote</Text>
         <TextInput
           style={[styles.input, styles.textArea]}
           placeholder="Enter your quote..."
@@ -152,15 +152,19 @@ export default function QuoteFormScreen() {
           multiline
           numberOfLines={4}
           textAlignVertical="top"
+          accessibilityLabel="Quote text"
+          accessibilityLabelledBy="quoteLabel"
         />
 
-        <Text style={styles.label}>Author (optional)</Text>
+        <Text style={styles.label} nativeID="authorLabel">Author (optional)</Text>
         <TextInput
           style={styles.input}
           placeholder="Who said this?"
           placeholderTextColor={colors.textMuted}
           value={author}
           onChangeText={setAuthor}
+          accessibilityLabel="Author name"
+          accessibilityLabelledBy="authorLabel"
         />
 
         {categories.length > 0 && (
@@ -172,6 +176,7 @@ export default function QuoteFormScreen() {
                 onValueChange={(value) => setCategoryId(value)}
                 style={styles.picker}
                 dropdownIconColor={colors.text}
+                accessibilityLabel="Select category"
               >
                 <Picker.Item label="No category" value={0} />
                 {categories.map((cat) => (
@@ -186,6 +191,9 @@ export default function QuoteFormScreen() {
           style={[styles.button, saving && styles.buttonDisabled]}
           onPress={handleSave}
           disabled={saving}
+          accessibilityRole="button"
+          accessibilityLabel={saving ? 'Saving' : isNew ? 'Add quote' : 'Save changes'}
+          accessibilityState={{ disabled: saving }}
         >
           <Text style={styles.buttonText}>
             {saving ? 'Saving...' : isNew ? 'Add Quote' : 'Save Changes'}

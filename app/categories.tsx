@@ -137,12 +137,14 @@ export default function CategoriesScreen() {
   });
 
   const renderCategory = ({ item }: { item: Category }) => (
-    <View style={styles.categoryItem}>
+    <View style={styles.categoryItem} accessibilityLabel={`Category: ${item.name}`}>
       <Text style={styles.categoryName}>{item.name}</Text>
       <Pressable
         style={styles.deleteButton}
         onPress={() => handleDelete(item)}
         hitSlop={10}
+        accessibilityRole="button"
+        accessibilityLabel={`Delete category ${item.name}`}
       >
         <Ionicons name="trash-outline" size={20} color={colors.danger} />
       </Pressable>
@@ -168,8 +170,15 @@ export default function CategoriesScreen() {
           onChangeText={setNewCategory}
           onSubmitEditing={handleAdd}
           returnKeyType="done"
+          accessibilityLabel="New category name"
+          accessibilityHint="Enter a name for the new category"
         />
-        <Pressable style={styles.addButton} onPress={handleAdd}>
+        <Pressable
+          style={styles.addButton}
+          onPress={handleAdd}
+          accessibilityRole="button"
+          accessibilityLabel="Add category"
+        >
           <Ionicons name="add" size={24} color="#fff" />
         </Pressable>
       </View>

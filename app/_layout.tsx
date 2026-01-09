@@ -2,9 +2,30 @@ import { useEffect } from 'react';
 import { LogBox } from 'react-native';
 import { Tabs } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
+import * as Sentry from '@sentry/react-native';
+import Constants from 'expo-constants';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { logger } from '../src/utils/logger';
+
+// Initialize Sentry if DSN is configured
+const sentryDsn = Constants.expoConfig?.extra?.sentryDsn;
+if (sentryDsn) {
+  Sentry.init({
+    dsn: sentryDsn,
+    tracesSampleRate: 0.2,
+    environment: __DEV__ ? 'development' : 'production',
+    release: `${Constants.expoConfig?.slug}@${Constants.expoConfig?.version}`,
+    beforeSend: (event) => {
+      // Strip any PII from user data
+      if (event.user) {
+        delete event.user.email;
+        delete event.user.ip_address;
+      }
+      return event;
+    },
+  });
+}
 
 // Ignore the linking warning caused by React 19 StrictMode double-mounting
 // This is a known issue with expo-router and React 19's development mode behavior
@@ -87,10 +108,12 @@ function TabsLayout() {
   );
 }
 
-export default function RootLayout() {
+function RootLayout() {
   return (
     <ThemeProvider>
       <TabsLayout />
     </ThemeProvider>
   );
 }
+
+export default Sentry.wrap(RootLayout);

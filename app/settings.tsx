@@ -217,6 +217,8 @@ export default function SettingsScreen() {
             value={isDark}
             onValueChange={handleDarkModeToggle}
             trackColor={{ false: colors.border, true: colors.primary }}
+            accessibilityLabel="Dark mode"
+            accessibilityHint={isDark ? 'Currently enabled' : 'Currently disabled'}
           />
         </View>
       </View>
@@ -235,6 +237,8 @@ export default function SettingsScreen() {
             value={darkBackground}
             onValueChange={handleDarkBackgroundToggle}
             trackColor={{ false: colors.border, true: colors.primary }}
+            accessibilityLabel="Dark wallpaper background"
+            accessibilityHint={darkBackground ? 'White text on black background' : 'Black text on white background'}
           />
         </View>
       </View>
@@ -266,9 +270,16 @@ export default function SettingsScreen() {
             secureTextEntry={!showApiKey}
             autoCapitalize="none"
             autoCorrect={false}
+            accessibilityLabel="XAI API key"
+            accessibilityHint="Enter your XAI API key for AI-powered quote import"
           />
           {xaiApiKey ? (
-            <Pressable style={styles.apiKeyToggle} onPress={() => setShowApiKey(!showApiKey)}>
+            <Pressable
+              style={styles.apiKeyToggle}
+              onPress={() => setShowApiKey(!showApiKey)}
+              accessibilityRole="button"
+              accessibilityLabel={showApiKey ? 'Hide API key' : 'Show API key'}
+            >
               <Ionicons
                 name={showApiKey ? 'eye-off-outline' : 'eye-outline'}
                 size={20}
@@ -277,13 +288,24 @@ export default function SettingsScreen() {
             </Pressable>
           ) : null}
           {xaiApiKey ? (
-            <Pressable style={styles.apiKeyToggle} onPress={() => handleApiKeyChange('')}>
+            <Pressable
+              style={styles.apiKeyToggle}
+              onPress={() => handleApiKeyChange('')}
+              accessibilityRole="button"
+              accessibilityLabel="Clear API key"
+            >
               <Ionicons name="close-circle-outline" size={20} color={colors.textMuted} />
             </Pressable>
           ) : null}
         </View>
 
-        <Pressable style={styles.getKeyButton} onPress={handleOpenXaiSignup}>
+        <Pressable
+          style={styles.getKeyButton}
+          onPress={handleOpenXaiSignup}
+          accessibilityRole="link"
+          accessibilityLabel="Get a free API key at x.ai"
+          accessibilityHint="Opens the XAI website in your browser"
+        >
           <Ionicons name="open-outline" size={16} color={colors.primary} />
           <Text style={styles.getKeyButtonText}>Get a free API key at x.ai</Text>
         </Pressable>

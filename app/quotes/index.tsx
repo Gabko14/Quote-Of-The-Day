@@ -201,9 +201,15 @@ export default function QuotesScreen() {
 
   const renderQuote = ({ item }: { item: Quote }) => {
     const categoryNames = getCategoryNames(item.category_ids);
+    const quotePreview = item.text.length > 50 ? item.text.substring(0, 50) + '...' : item.text;
     return (
       <Link href={`/quotes/${item.id}`} asChild>
-        <Pressable style={styles.quoteItem}>
+        <Pressable
+          style={styles.quoteItem}
+          accessibilityRole="button"
+          accessibilityLabel={`Quote: ${quotePreview}${item.author ? `, by ${item.author}` : ''}`}
+          accessibilityHint="Tap to edit this quote"
+        >
           <View style={styles.quoteContent}>
             <Text style={styles.quoteText} numberOfLines={2}>
               "{item.text}"
@@ -225,6 +231,8 @@ export default function QuotesScreen() {
             style={styles.deleteButton}
             onPress={() => handleDelete(item)}
             hitSlop={10}
+            accessibilityRole="button"
+            accessibilityLabel={`Delete quote${item.author ? ` by ${item.author}` : ''}`}
           >
             <Ionicons name="trash-outline" size={20} color={colors.danger} />
           </Pressable>
@@ -252,6 +260,7 @@ export default function QuotesScreen() {
               onValueChange={handleCategoryChange}
               style={styles.picker}
               dropdownIconColor={colors.text}
+              accessibilityLabel="Filter by category"
             >
               <Picker.Item label="All quotes" value={0} />
               {categories.map((cat) => (
@@ -281,12 +290,21 @@ export default function QuotesScreen() {
         />
       )}
       <Link href="/quotes/import" asChild>
-        <Pressable style={styles.importFab}>
+        <Pressable
+          style={styles.importFab}
+          accessibilityRole="button"
+          accessibilityLabel="Import quotes"
+          accessibilityHint="Use AI to import multiple quotes at once"
+        >
           <Ionicons name="cloud-upload-outline" size={26} color={colors.primary} />
         </Pressable>
       </Link>
       <Link href="/quotes/new" asChild>
-        <Pressable style={styles.fab}>
+        <Pressable
+          style={styles.fab}
+          accessibilityRole="button"
+          accessibilityLabel="Add new quote"
+        >
           <Ionicons name="add" size={28} color="#fff" />
         </Pressable>
       </Link>

@@ -30,6 +30,7 @@ export {
   setDarkBackground,
   getCurrentQuoteId,
   setCurrentQuoteId,
+  clearCurrentQuoteId,
   getLastQuoteDate,
   setLastQuoteDate,
 } from './settings';

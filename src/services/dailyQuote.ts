@@ -3,6 +3,7 @@ import {
   getRandomQuote,
   getCurrentQuoteId,
   setCurrentQuoteId,
+  clearCurrentQuoteId,
   getLastQuoteDate,
   setLastQuoteDate,
   getQuoteById,
@@ -28,9 +29,13 @@ export async function rotateQuoteIfNeeded(): Promise<Quote | null> {
     // Return current quote without rotation
     const currentId = await getCurrentQuoteId();
     if (currentId) {
-      return getQuoteById(currentId);
+      const quote = await getQuoteById(currentId);
+      if (quote) return quote;
+      // Quote was deleted, clear stale reference and rotate
+      await clearCurrentQuoteId();
     }
-    return null;
+    // No valid current quote, pick a new one
+    return rotateQuote();
   }
 
   return rotateQuote();

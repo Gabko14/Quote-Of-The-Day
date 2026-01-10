@@ -35,6 +35,15 @@ export default {
       "expo-router",
       "expo-background-task",
       "./plugins/withWallpaperModule",
+      "./plugins/withReleaseSigning",
+      [
+        "@sentry/react-native/expo",
+        {
+          url: "https://sentry.io/",
+          organization: process.env.SENTRY_ORG || "",
+          project: process.env.SENTRY_PROJECT || "",
+        },
+      ],
       [
         "expo-build-properties",
         {
@@ -48,6 +57,11 @@ export default {
     extra: {
       // Set WORKER_URL in .env to enable worker mode for testing
       workerUrl: process.env.WORKER_URL || "",
+      // Sentry DSN for crash reporting (optional)
+      sentryDsn: process.env.SENTRY_DSN || "",
+      eas: {
+        projectId: "766d00d3-7120-48af-a15f-bdcaf95f900a",
+      },
     },
   },
 };

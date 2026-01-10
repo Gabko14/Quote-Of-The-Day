@@ -191,6 +191,15 @@ export default function HomeScreen() {
             style={[styles.button, (!wallpaperReady || settingWallpaper) && styles.buttonDisabled]}
             onPress={handleSetWallpaper}
             disabled={!wallpaperReady || settingWallpaper}
+            accessibilityRole="button"
+            accessibilityLabel={
+              settingWallpaper
+                ? 'Setting wallpaper'
+                : hasQuotes && !wallpaperReady
+                  ? 'Generating wallpaper'
+                  : 'Set as wallpaper'
+            }
+            accessibilityState={{ disabled: !wallpaperReady || settingWallpaper }}
           >
             {settingWallpaper ? (
               <ActivityIndicator size="small" color="#fff" />

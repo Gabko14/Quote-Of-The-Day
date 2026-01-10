@@ -6,6 +6,7 @@ jest.mock('../../db', () => ({
   getRandomQuote: jest.fn(),
   getCurrentQuoteId: jest.fn(),
   setCurrentQuoteId: jest.fn(),
+  clearCurrentQuoteId: jest.fn(),
   getLastQuoteDate: jest.fn(),
   setLastQuoteDate: jest.fn(),
   getQuoteById: jest.fn(),
@@ -168,10 +169,39 @@ describe('dailyQuote service', () => {
       expect(mockGetRandomQuoteExcluding).toHaveBeenCalledWith(1);
     });
 
-    it('returns null when no current quote and needs rotation fails', async () => {
+    it('rotates to pick a new quote when no current quote exists', async () => {
+      const mockQuote = { id: 1, text: 'Quote 1', author: 'Author 1', category_id: null, category_ids: [], created_at: '' };
       mockDate('2025-01-15T10:00:00Z');
       mockGetLastQuoteDate.mockResolvedValue('2025-01-15');
       mockGetCurrentQuoteId.mockResolvedValue(null);
+      mockGetQuoteCount.mockResolvedValue(1);
+      mockGetRandomQuote.mockResolvedValue(mockQuote);
+
+      const result = await rotateQuoteIfNeeded();
+
+      expect(result).toEqual(mockQuote);
+      expect(mockGetRandomQuote).toHaveBeenCalled();
+    });
+
+    it('rotates when current quote was deleted', async () => {
+      const newQuote = { id: 2, text: 'Quote 2', author: 'Author 2', category_id: null, category_ids: [], created_at: '' };
+      mockDate('2025-01-15T10:00:00Z');
+      mockGetLastQuoteDate.mockResolvedValue('2025-01-15');
+      mockGetCurrentQuoteId.mockResolvedValue(1);
+      mockGetQuoteById.mockResolvedValue(null); // Quote was deleted
+      mockGetQuoteCount.mockResolvedValue(1);
+      mockGetRandomQuote.mockResolvedValue(newQuote);
+
+      const result = await rotateQuoteIfNeeded();
+
+      expect(result).toEqual(newQuote);
+    });
+
+    it('returns null when no quotes exist', async () => {
+      mockDate('2025-01-15T10:00:00Z');
+      mockGetLastQuoteDate.mockResolvedValue('2025-01-15');
+      mockGetCurrentQuoteId.mockResolvedValue(null);
+      mockGetQuoteCount.mockResolvedValue(0);
 
       const result = await rotateQuoteIfNeeded();
 

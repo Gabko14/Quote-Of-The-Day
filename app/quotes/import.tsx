@@ -156,11 +156,22 @@ export default function ImportScreen() {
 
     setSaving(true);
     try {
-      for (const quote of quotes) {
+      // Generate incrementing timestamps to preserve import order
+      // First quote gets oldest timestamp, last quote gets newest
+      // This ensures quotes display in the same order they were imported
+      const baseTime = Date.now();
+
+      for (let i = 0; i < quotes.length; i++) {
+        const quote = quotes[i];
+        // Offset each quote by index (oldest first, newest last)
+        // Add i milliseconds to ensure unique, incrementing timestamps
+        const timestamp = new Date(baseTime + i).toISOString();
+
         await createQuote({
           text: quote.text.trim(),
           author: quote.author?.trim() || null,
           category_ids: quote.categoryIds,
+          created_at: timestamp,
         });
       }
 

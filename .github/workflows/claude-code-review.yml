@@ -3,6 +3,12 @@ name: Claude Code Review
 on:
   pull_request:
     types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      pr_number:
+        description: 'PR number to review'
+        required: true
+        type: number
 
 jobs:
   claude-review:
@@ -31,7 +37,7 @@ jobs:
             --allowedTools "Edit,Write,Bash(git:*),Bash(gh issue:*),Bash(gh pr:*),Bash(gh search:*),Bash(npm:*),Bash(npx:*)"
           prompt: |
             REPO: ${{ github.repository }}
-            PR NUMBER: ${{ github.event.pull_request.number }}
+            PR NUMBER: ${{ github.event.pull_request.number || inputs.pr_number }}
 
             Please review this pull request and provide feedback on:
             - Code quality and best practices

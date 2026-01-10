@@ -128,9 +128,18 @@ const quotes = await db.getAllAsync<Quote>('SELECT * FROM quotes');
 - **Named exports** for components: `export function WallpaperPreview()`
 - **Default exports** only for screens (Expo Router requirement)
 
+### PR Review Workflow
+
+When a PR has been reviewed:
+1. Read all review comments with `gh pr view <number>`
+2. **Evaluate each comment critically** - determine if the feedback is valid or noise
+3. If feedback is valid: fix the issues, push changes, wait for re-review
+4. If feedback is noise/unnecessary: proceed with merge
+5. Only merge after consciously evaluating all review feedback
+
 ## Issue Management (Beads)
 
-**Issues stay open until fully verified** - code written is not enough. Manual testing, setup steps, and user confirmation must all be complete before closing.
+**An issue is done when the PR is merged** and all reviewer feedback has been addressed. Code written alone is not enough - the PR must be reviewed, feedback resolved, and merged to main/master.
 
 ## Before Finishing
 

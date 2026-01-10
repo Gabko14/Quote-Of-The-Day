@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Privacy Policy - Quote of the Day</title>
+    <style>
+        :root {
+            --bg: #fafafa;
+            --text: #1a1a1a;
+            --muted: #666;
+            --border: #e0e0e0;
+            --accent: #2563eb;
+        }
+        @media (prefers-color-scheme: dark) {
+            :root {
+                --bg: #0f0f0f;
+                --text: #f0f0f0;
+                --muted: #999;
+                --border: #333;
+                --accent: #60a5fa;
+            }
+        }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            line-height: 1.7;
+            color: var(--text);
+            background: var(--bg);
+            padding: 2rem 1rem;
+        }
+        .container {
+            max-width: 720px;
+            margin: 0 auto;
+        }
+        h1 {
+            font-size: 2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+        .last-updated {
+            color: var(--muted);
+            font-size: 0.9rem;
+            margin-bottom: 2rem;
+            padding-bottom: 2rem;
+            border-bottom: 1px solid var(--border);
+        }
+        h2 {
+            font-size: 1.25rem;
+            font-weight: 600;
+            margin-top: 2rem;
+            margin-bottom: 0.75rem;
+        }
+        p, ul {
+            margin-bottom: 1rem;
+            color: var(--text);
+        }
+        ul {
+            padding-left: 1.5rem;
+        }
+        li {
+            margin-bottom: 0.5rem;
+        }
+        a {
+            color: var(--accent);
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        .highlight {
+            background: var(--accent);
+            color: white;
+            padding: 0.15rem 0.4rem;
+            border-radius: 4px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        .summary {
+            background: var(--border);
+            padding: 1.25rem;
+            border-radius: 8px;
+            margin-bottom: 2rem;
+        }
+        .summary p {
+            margin-bottom: 0;
+        }
+        footer {
+            margin-top: 3rem;
+            padding-top: 2rem;
+            border-top: 1px solid var(--border);
+            color: var(--muted);
+            font-size: 0.9rem;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Privacy Policy</h1>
+        <p class="last-updated">Last updated: January 10, 2026</p>
+
+        <div class="summary">
+            <p><strong>Summary:</strong> Quote of the Day stores all your data locally on your device. We don't have accounts, don't collect personal information, and don't sell any data. The app works entirely offline.</p>
+        </div>
+
+        <h2>About This App</h2>
+        <p>Quote of the Day is a wallpaper app that displays your favorite quotes as phone wallpapers. The app rotates through your quotes daily, helping you stay inspired.</p>
+
+        <h2>Data Storage</h2>
+        <p>All your data is stored <span class="highlight">locally on your device</span>:</p>
+        <ul>
+            <li><strong>Quotes:</strong> Stored in a local SQLite database on your device</li>
+            <li><strong>Categories:</strong> Stored locally alongside your quotes</li>
+            <li><strong>Settings:</strong> Dark mode preferences and other settings stored locally</li>
+            <li><strong>Wallpaper images:</strong> Generated and cached on your device</li>
+        </ul>
+        <p>We do not have access to your quotes or any other data you enter into the app. Your data never leaves your device unless you explicitly choose to use optional features described below.</p>
+
+        <h2>No Account Required</h2>
+        <p>Quote of the Day does not require you to create an account. There is no login, no email collection, and no user registration of any kind.</p>
+
+        <h2>Optional Features</h2>
+
+        <h3>AI Bulk Import</h3>
+        <p>The app offers an optional feature to parse quotes from pasted text using AI. If you use this feature:</p>
+        <ul>
+            <li>You provide your own API key from xAI (Grok)</li>
+            <li>The text you paste is sent directly from your device to xAI's servers</li>
+            <li>We do not see, store, or have access to your API key or the text you process</li>
+            <li>This feature is entirely optional and the app works fully without it</li>
+        </ul>
+        <p>Please review <a href="https://x.ai/legal/privacy-policy" target="_blank">xAI's privacy policy</a> if you choose to use this feature.</p>
+
+        <h3>Crash Reporting</h3>
+        <p>We use Sentry for crash reporting to help us identify and fix bugs. When the app crashes:</p>
+        <ul>
+            <li>Anonymous error information is sent to Sentry</li>
+            <li>This includes: error type, stack trace, device model, OS version, and app version</li>
+            <li>No personal information, quotes, or user content is included in crash reports</li>
+            <li>No unique identifiers that could identify you personally</li>
+        </ul>
+
+        <h2>Data We Don't Collect</h2>
+        <p>To be clear, we do <strong>not</strong> collect:</p>
+        <ul>
+            <li>Personal information (name, email, phone number)</li>
+            <li>Location data</li>
+            <li>Contacts or calendar data</li>
+            <li>Your quotes or any content you enter</li>
+            <li>Usage analytics or behavioral data</li>
+            <li>Advertising identifiers</li>
+        </ul>
+
+        <h2>Third-Party Services</h2>
+        <p>The app may interact with these third-party services:</p>
+        <ul>
+            <li><strong>xAI (optional):</strong> Only if you use the AI bulk import feature with your own API key</li>
+            <li><strong>Sentry:</strong> For anonymous crash reporting</li>
+        </ul>
+        <p>We do not use any advertising networks, analytics services, or social media SDKs.</p>
+
+        <h2>Children's Privacy</h2>
+        <p>Quote of the Day does not knowingly collect any personal information from children under 13. Since we don't collect personal information from anyone, this applies to users of all ages.</p>
+
+        <h2>Changes to This Policy</h2>
+        <p>We may update this privacy policy from time to time. Any changes will be posted on this page with an updated "Last updated" date. We encourage you to review this policy periodically.</p>
+
+        <h2>Contact Us</h2>
+        <p>If you have any questions about this privacy policy or the app, you can:</p>
+        <ul>
+            <li>Open an issue on <a href="https://github.com/Gabko14/Quote-Of-The-Day/issues" target="_blank">GitHub</a></li>
+            <li>Contact us at: <a href="mailto:quoteofthedayapp@proton.me">quoteofthedayapp@proton.me</a></li>
+        </ul>
+
+        <footer>
+            <p>&copy; 2026 Quote of the Day. All rights reserved.</p>
+        </footer>
+    </div>
+</body>
+</html>

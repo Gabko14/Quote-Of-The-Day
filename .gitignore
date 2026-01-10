@@ -49,3 +49,6 @@ worker/.dev.vars
 # generated native folders
 /ios
 /android
+
+# bv (beads viewer) local config and caches
+.bv/

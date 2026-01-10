@@ -59,6 +59,9 @@ export default {
       workerUrl: process.env.WORKER_URL || "",
       // Sentry DSN for crash reporting (optional)
       sentryDsn: process.env.SENTRY_DSN || "",
+      eas: {
+        projectId: "766d00d3-7120-48af-a15f-bdcaf95f900a",
+      },
     },
   },
 };

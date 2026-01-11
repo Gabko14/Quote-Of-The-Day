@@ -8,6 +8,7 @@ import {
   Pressable,
   Linking,
   Platform,
+  Alert,
 } from 'react-native';
 import * as IntentLauncher from 'expo-intent-launcher';
 import Constants from 'expo-constants';
@@ -105,8 +106,15 @@ export default function SettingsScreen() {
           IntentLauncher.ActivityAction.IGNORE_BATTERY_OPTIMIZATION_SETTINGS
         );
       } catch {
-        // Last resort: open general settings
-        Linking.openSettings();
+        // Last resort: open general settings with user guidance
+        Alert.alert(
+          'Open Settings Manually',
+          'Go to Settings > Apps > Quote of the Day > Battery > Unrestricted',
+          [
+            { text: 'Cancel', style: 'cancel' },
+            { text: 'Open Settings', onPress: () => Linking.openSettings() },
+          ]
+        );
       }
     }
   };
@@ -292,27 +300,27 @@ export default function SettingsScreen() {
         </View>
       </View>
 
-{Platform.OS === 'android' && (
-      <View style={styles.section}>
-        <Text style={styles.sectionTitle}>Background Updates</Text>
+      {Platform.OS === 'android' && (
+        <View style={styles.section}>
+          <Text style={styles.sectionTitle}>Background Updates</Text>
 
-        <Text style={styles.rowTitle}>Battery Optimization</Text>
-        <Text style={styles.batteryHint}>
-          For reliable daily wallpaper changes, disable battery optimization for this app.
-          Android may otherwise prevent background updates to save battery.
-        </Text>
+          <Text style={styles.rowTitle}>Battery Optimization</Text>
+          <Text style={styles.batteryHint}>
+            For reliable daily wallpaper changes, disable battery optimization for this app.
+            Android may otherwise prevent background updates to save battery.
+          </Text>
 
-        <Pressable
-          style={styles.batteryButton}
-          onPress={handleOpenBatterySettings}
-          accessibilityRole="button"
-          accessibilityLabel="Open battery settings"
-          accessibilityHint="Opens Android battery optimization settings for this app"
-        >
-          <Ionicons name="battery-half-outline" size={20} color="#fff" />
-          <Text style={styles.batteryButtonText}>Open Battery Settings</Text>
-        </Pressable>
-      </View>
+          <Pressable
+            style={styles.batteryButton}
+            onPress={handleOpenBatterySettings}
+            accessibilityRole="button"
+            accessibilityLabel="Open battery settings"
+            accessibilityHint="Opens Android battery optimization settings for this app"
+          >
+            <Ionicons name="battery-half-outline" size={20} color="#fff" />
+            <Text style={styles.batteryButtonText}>Open Battery Settings</Text>
+          </Pressable>
+        </View>
       )}
 
       <View style={styles.section}>

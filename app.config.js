@@ -18,6 +18,7 @@ export default {
     },
     ios: {
       supportsTablet: true,
+      bundleIdentifier: "com.quoteoftheday.app",
     },
     android: {
       adaptiveIcon: {
@@ -26,6 +27,7 @@ export default {
       },
       edgeToEdgeEnabled: true,
       package: "com.quoteoftheday.app",
+      permissions: ["android.permission.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS"],
     },
     web: {
       favicon: "./assets/favicon.png",

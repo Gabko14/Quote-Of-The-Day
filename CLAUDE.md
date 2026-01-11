@@ -137,6 +137,8 @@ When a PR has been reviewed:
 4. If feedback is noise/unnecessary: proceed with merge
 5. Only merge after consciously evaluating all review feedback
 
+**After creating a PR**: Always start a foreground Task agent that polls for Claude Code Review comments and reports back when the review arrives. This keeps the conversation active until the review is ready.
+
 ## Issue Management (Beads)
 
 **An issue is done when the PR is merged** and all reviewer feedback has been addressed. Code written alone is not enough - the PR must be reviewed, feedback resolved, and merged to main/master.

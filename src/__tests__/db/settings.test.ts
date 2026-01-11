@@ -177,13 +177,13 @@ describe('settings db', () => {
       expect(result).toBe(123);
     });
 
-    it('returns NaN for non-numeric strings (edge case)', async () => {
+    it('returns null for non-numeric strings (corrupted value)', async () => {
       setMockSetting('currentQuoteId', 'not-a-number');
       const { getCurrentQuoteId } = await import('../../db/settings');
 
       const result = await getCurrentQuoteId();
 
-      expect(result).toBeNaN();
+      expect(result).toBeNull();
     });
   });
 

@@ -5,6 +5,7 @@ import { Ionicons } from '@expo/vector-icons';
 import * as Sentry from '@sentry/react-native';
 import Constants from 'expo-constants';
 import { registerBackgroundTask } from '../src/services/backgroundTask';
+import { promptBatteryOptimization } from '../src/services/batteryOptimization';
 import { ThemeProvider, useTheme } from '../src/theme/ThemeContext';
 import { logger } from '../src/utils/logger';
 
@@ -37,6 +38,7 @@ function TabsLayout() {
 
   useEffect(() => {
     registerBackgroundTask().catch(logger.error);
+    promptBatteryOptimization().catch(logger.error);
   }, []);
 
   return (

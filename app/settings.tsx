@@ -8,10 +8,8 @@ import {
   Pressable,
   Linking,
   Platform,
-  Alert,
 } from 'react-native';
-import * as IntentLauncher from 'expo-intent-launcher';
-import Constants from 'expo-constants';
+import { openBatterySettings } from '../src/services/batteryOptimization';
 import { useState, useCallback, useRef, useEffect } from 'react';
 import { useFocusEffect } from 'expo-router';
 import { Ionicons } from '@expo/vector-icons';
@@ -86,37 +84,6 @@ export default function SettingsScreen() {
 
   const handleOpenXaiSignup = () => {
     Linking.openURL('https://x.ai/api');
-  };
-
-  const handleOpenBatterySettings = async () => {
-    if (Platform.OS !== 'android') return;
-
-    const packageName = Constants.expoConfig?.android?.package ?? 'com.gabko14.quoteoftheday';
-
-    try {
-      // Try to open the app-specific battery optimization settings
-      await IntentLauncher.startActivityAsync(
-        IntentLauncher.ActivityAction.REQUEST_IGNORE_BATTERY_OPTIMIZATIONS,
-        { data: `package:${packageName}` }
-      );
-    } catch {
-      // Fallback to general battery optimization settings
-      try {
-        await IntentLauncher.startActivityAsync(
-          IntentLauncher.ActivityAction.IGNORE_BATTERY_OPTIMIZATION_SETTINGS
-        );
-      } catch {
-        // Last resort: open general settings with user guidance
-        Alert.alert(
-          'Open Settings Manually',
-          'Go to Settings > Apps > Quote of the Day > Battery > Unrestricted',
-          [
-            { text: 'Cancel', style: 'cancel' },
-            { text: 'Open Settings', onPress: () => Linking.openSettings() },
-          ]
-        );
-      }
-    }
   };
 
   const styles = StyleSheet.create({
@@ -312,7 +279,7 @@ export default function SettingsScreen() {
 
           <Pressable
             style={styles.batteryButton}
-            onPress={handleOpenBatterySettings}
+            onPress={openBatterySettings}
             accessibilityRole="button"
             accessibilityLabel="Open battery settings"
             accessibilityHint="Opens Android battery optimization settings for this app"

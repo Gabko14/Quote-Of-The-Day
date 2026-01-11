@@ -52,3 +52,9 @@ worker/.dev.vars
 
 # bv (beads viewer) local config and caches
 .bv/
+
+# Android SDK (should be in ~/Library/Android/sdk)
+build-tools/
+licenses/
+platform-tools/
+platforms/
